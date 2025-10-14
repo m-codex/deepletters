@@ -64,11 +64,12 @@ export default function PreviewStep() {
       // 2. Prepare data for encryption
       let audioDataUrl: string | null = null;
       if (letterData.audioBlob) {
+        const audioBlob = letterData.audioBlob;
         audioDataUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result as string);
           reader.onerror = reject;
-          reader.readAsDataURL(letterData.audioBlob);
+          reader.readAsDataURL(audioBlob);
         });
       }
 
