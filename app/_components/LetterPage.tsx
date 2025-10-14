@@ -6,7 +6,13 @@ import { Share2, Copy, Check, Loader2, Eye, Mail, Stamp } from 'lucide-react';
 import PayPalButton, { PayPalOrder } from './PayPalButton';
 import { supabase, Letter } from '@/_lib/supabase';
 
-export default function LetterPage({ managementToken }: { managementToken: string }) {
+export default function LetterPage({
+  managementToken,
+  encryptionKey,
+}: {
+  managementToken: string;
+  encryptionKey?: string;
+}) {
   const router = useRouter();
   const [letter, setLetter] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,10 +67,15 @@ export default function LetterPage({ managementToken }: { managementToken: strin
     fetchData();
   }, [fetchData]);
 
+  const shareUrl = letter
+    ? `${window.location.origin}/letter/${letter.share_code}${
+        encryptionKey ? `#${encryptionKey}` : ''
+      }`
+    : '';
+
   const copyToClipboard = async () => {
-    if (letter) {
-      const url = `${window.location.origin}/letter/${letter.share_code}`;
-      await navigator.clipboard.writeText(url);
+    if (shareUrl) {
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -86,8 +97,6 @@ export default function LetterPage({ managementToken }: { managementToken: strin
       </div>
     );
   }
-
-  const shareUrl = `${window.location.origin}/letter/${letter?.share_code}`;
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">

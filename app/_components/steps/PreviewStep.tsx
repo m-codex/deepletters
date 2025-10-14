@@ -7,6 +7,11 @@ import { Eye, Play, Pause, Music } from 'lucide-react';
 import StepWrapper from './StepWrapper';
 import { supabase, Letter } from '@/_lib/supabase';
 import shortUUID from 'short-uuid';
+import {
+  generateEncryptionKey,
+  exportKeyToString,
+  encryptData,
+} from '@/_lib/crypto';
 
 export default function PreviewStep() {
   const router = useRouter();
@@ -45,25 +50,52 @@ export default function PreviewStep() {
   };
 
   const handleFinalize = async () => {
+    if (!letterData.shareCode) {
+      alert('Cannot finalize without a share code.');
+      return;
+    }
     setIsLoading(true);
+
     try {
-      let audioUrlToUpdate: string | null = null;
+      // 1. Generate and export key
+      const encryptionKey = await generateEncryptionKey();
+      const exportedKey = await exportKeyToString(encryptionKey);
+
+      // 2. Prepare data for encryption
+      let audioDataUrl: string | null = null;
       if (letterData.audioBlob) {
-        const audioFileName = `${letterData.shareCode}-${Date.now()}.webm`;
-        const { error: uploadError } = await supabase.storage
-          .from('voice-recordings')
-          .upload(audioFileName, letterData.audioBlob, { upsert: true });
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from('voice-recordings')
-          .getPublicUrl(audioFileName);
-        audioUrlToUpdate = urlData.publicUrl;
+        const audioBlob = letterData.audioBlob;
+        audioDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(audioBlob);
+        });
       }
 
+      const dataToEncrypt = {
+        content: letterData.content,
+        audioDataUrl: audioDataUrl,
+        senderName: letterData.senderName,
+        musicId: letterData.musicId,
+      };
+
+      // 3. Encrypt the data
+      const jsonString = JSON.stringify(dataToEncrypt);
+      const dataBuffer = new TextEncoder().encode(jsonString);
+      const encryptedBuffer = await encryptData(encryptionKey, dataBuffer);
+
+      // 4. Upload the encrypted file
+      const encryptedFile = new Blob([encryptedBuffer], { type: 'application/octet-stream' });
+      const filePath = `${letterData.shareCode}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('encrypted-letters')
+        .upload(filePath, encryptedFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // 5. Update the database record
       const finalizedAt = new Date().toISOString();
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
@@ -73,26 +105,24 @@ export default function PreviewStep() {
         finalized_at: finalizedAt,
         expires_at: expiresAt.toISOString(),
         management_token: managementToken,
+        storage_path: filePath,
+        // content and audio_url are no longer stored directly
       };
-
-      if (audioUrlToUpdate) {
-        updateData.audio_url = audioUrlToUpdate;
-      }
 
       const { error: updateError } = await supabase
         .from('letters')
         .update(updateData)
         .eq('share_code', letterData.shareCode);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
+      // 6. Redirect the user
       if (letterData.shareCode) {
         localStorage.removeItem('unfinalizedShareCode');
         localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
       }
-      router.replace(`/manage/${managementToken}`);
+      router.replace(`/manage/${managementToken}?key=${exportedKey}`);
+
     } catch (error) {
       console.error('Error finalizing letter:', error);
       alert('Could not finalize your letter. Please try again.');

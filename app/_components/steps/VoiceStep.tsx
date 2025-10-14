@@ -26,53 +26,9 @@ export default function VoiceStep() {
     setAudioUrl(letterData.audioUrl);
   }, [letterData.audioUrl]);
 
-  const uploadAudio = async (blob: Blob) => {
-    if (!letterData.shareCode) {
-      const errorMsg = 'No share code available for upload.';
-      console.error(errorMsg);
-      setUploadError(errorMsg);
-      return;
-    }
-
-    setIsUploading(true);
-    const filePath = `public/${letterData.shareCode}-${Date.now()}.webm`;
-
-    try {
-      const { error: uploadError } = await supabase.storage
-        .from('voice-recordings')
-        .upload(filePath, blob);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('voice-recordings')
-        .getPublicUrl(filePath);
-
-      if (!publicUrlData.publicUrl) {
-        throw new Error('Could not get public URL for audio.');
-      }
-
-      const publicUrl = publicUrlData.publicUrl;
-      setAudioUrl(publicUrl);
-      updateLetterData({ audioUrl: publicUrl, audioBlob: null });
-      setUploadError(null);
-
-    } catch (error) {
-      console.error('Error uploading audio:', error);
-      const errorMessage = JSON.stringify(error, Object.getOwnPropertyNames(error));
-      setUploadError(`Upload failed: ${errorMessage}`);
-      setAudioUrl(null);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const startRecording = async () => {
     try {
       setUploadError(null);
-      // Clear previous recording before starting a new one
       setAudioUrl(null);
       updateLetterData({ audioUrl: null, audioBlob: null });
 
@@ -95,9 +51,9 @@ export default function VoiceStep() {
       mediaRecorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const localUrl = URL.createObjectURL(blob);
-        setAudioUrl(localUrl); // Set local URL for immediate playback
+        setAudioUrl(localUrl);
+        updateLetterData({ audioBlob: blob, audioUrl: localUrl });
         stream.getTracks().forEach((track) => track.stop());
-        uploadAudio(blob); // Upload in the background
       };
 
       mediaRecorder.start();
