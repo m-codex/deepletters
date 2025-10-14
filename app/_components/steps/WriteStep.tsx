@@ -58,6 +58,7 @@ export default function WriteStep() {
         .insert({
           share_code: newShareCode,
           sender_name: senderName, // Save sender name for identification
+          content: content,
         })
         .select()
         .single();
