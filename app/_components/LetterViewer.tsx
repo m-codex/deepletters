@@ -1,12 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'next/navigation';
 import { supabase, Letter } from '@/_lib/supabase';
 import { Mail, Volume2, VolumeX, Crown } from 'lucide-react';
+import { importKeyFromString, decryptData } from '@/_lib/crypto';
+
+type DecryptedLetter = {
+  content: string;
+  senderName: string;
+  audioDataUrl: string | null;
+  musicId: string | null;
+};
 
 export default function LetterViewer({ shareCode }: { shareCode: string }) {
-  const [letter, setLetter] = useState<Letter | null>(null);
+  const [letterMetadata, setLetterMetadata] = useState<Letter | null>(null);
+  const [decryptedLetter, setDecryptedLetter] = useState<DecryptedLetter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -14,15 +22,13 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
 
-
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.documentElement.scrollTo(0, 0);
-    document.body.scrollTo(0, 0);
   }, []);
 
-  const loadLetter = useCallback(async () => {
+  const loadLetter = useCallback(async (keyString: string) => {
     try {
+      // 1. Fetch letter metadata
       const { data: letterData, error: letterError } = await supabase
         .from('letters')
         .select('*')
@@ -31,27 +37,39 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
       if (letterError) throw letterError;
 
-      if (!letterData) {
-        setError('Letter not found or has expired');
-        setLoading(false);
+      if (!letterData || !letterData.storage_path) {
+        setError('Letter not found or has expired.');
         return;
       }
-
       if (letterData.expires_at && new Date(letterData.expires_at) < new Date() && !letterData.is_permanent) {
-        setError('This letter has expired');
-        setLoading(false);
+        setError('This letter has expired.');
         return;
       }
+      setLetterMetadata(letterData);
 
+      // 2. Download encrypted file
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from('encrypted-letters')
+        .download(letterData.storage_path);
+
+      if (fileError) throw fileError;
+
+      // 3. Import key and decrypt data
+      const encryptionKey = await importKeyFromString(keyString);
+      const decryptedBuffer = await decryptData(encryptionKey, await fileData.arrayBuffer());
+      const decryptedJson = new TextDecoder().decode(decryptedBuffer);
+      const letterContent: DecryptedLetter = JSON.parse(decryptedJson);
+      setDecryptedLetter(letterContent);
+
+      // 4. Increment view count
       await supabase
         .from('letters')
         .update({ view_count: letterData.view_count + 1 })
         .eq('id', letterData.id);
 
-      setLetter(letterData);
     } catch (err) {
-      console.error('Error loading letter:', err);
-      setError('Failed to load letter');
+      console.error('Error loading or decrypting letter:', err);
+      setError('Failed to load or decrypt the letter. The link may be invalid.');
     } finally {
       setLoading(false);
     }
@@ -59,7 +77,13 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
   useEffect(() => {
     if (shareCode) {
-      loadLetter();
+      const keyString = window.location.hash.substring(1);
+      if (keyString) {
+        loadLetter(keyString);
+      } else {
+        setError('Encryption key not found in URL.');
+        setLoading(false);
+      }
     }
   }, [shareCode, loadLetter]);
 
@@ -102,7 +126,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     );
   }
 
-  if (error || !letter) {
+  if (error || !decryptedLetter || !letterMetadata) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-bg">
         <div className="text-center">
@@ -111,15 +135,15 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
             {error || 'Letter not found'}
           </h2>
           <p className="text-secondary">
-            This letter may have expired or the link is invalid
+            This letter may have expired or the link is invalid.
           </p>
         </div>
       </div>
     );
   }
 
-  const expiresIn = letter.expires_at
-    ? Math.ceil((new Date(letter.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  const expiresIn = letterMetadata.expires_at
+    ? Math.ceil((new Date(letterMetadata.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   return (
@@ -129,12 +153,12 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
           <Mail className="w-12 h-12 text-btn-primary" />
         </div>
         <h1 className="text-4xl font-bold text-primary mb-4 font-serif">
-          A Letter from {letter.sender_name || 'A secret admirer'}
+          A Letter from {decryptedLetter.senderName || 'A secret admirer'}
         </h1>
 
         {!isOpened && (
           <>
-            {(letter.audio_url || letter.music_id) ? (
+            {(decryptedLetter.audioDataUrl || decryptedLetter.musicId) ? (
               <p className="text-secondary mb-8">
                 This letter contains audio. Headphones or speakers are recommended.
               </p>
@@ -155,22 +179,22 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
         {isOpened && (
           <>
             <div className="transition-all duration-1000 animate-fadeIn">
-              {letter.audio_url && (
+              {decryptedLetter.audioDataUrl && (
                 <audio
                   ref={voiceAudioRef}
-                  src={letter.audio_url}
+                  src={decryptedLetter.audioDataUrl}
                   onEnded={handleAudioEnd}
                 />
               )}
-               {letter.music_id && (
+              {decryptedLetter.musicId && (
                 <audio
                   ref={musicAudioRef}
-                  src={`/music/${letter.music_id}.mp3`}
+                  src={`/music/${decryptedLetter.musicId}.mp3`}
                   loop
                 />
               )}
               <div className="bg-secondary-bg rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left">
-                {(letter.audio_url || letter.music_id) && (
+                {(decryptedLetter.audioDataUrl || decryptedLetter.musicId) && (
                   <button
                     onClick={toggleAudio}
                     className="float-right w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
@@ -180,11 +204,11 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                 )}
                 <div className="prose prose-lg max-w-none mb-8 animate-fadeInUp text-primary">
                   <p className="whitespace-pre-wrap leading-relaxed text-lg font-serif">
-                    {letter.content}
+                    {decryptedLetter.content}
                   </p>
                 </div>
 
-                {!letter.is_permanent && expiresIn !== null && (
+                {!letterMetadata.is_permanent && expiresIn !== null && (
                   <div className="mt-12 text-center">
                     <p className="text-sm text-secondary">
                       This letter expires in {expiresIn} {expiresIn === 1 ? 'day' : 'days'}.{' '}
@@ -198,7 +222,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                   </div>
                 )}
 
-                {letter.is_permanent && (
+                {letterMetadata.is_permanent && (
                   <div className="mt-12 p-6 bg-secondary-bg border-2 border-btn-primary rounded-lg">
                     <div className="flex items-center gap-3 text-primary">
                       <Crown className="w-6 h-6 text-btn-primary" />

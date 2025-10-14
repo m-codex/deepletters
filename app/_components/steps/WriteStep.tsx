@@ -45,47 +45,34 @@ export default function WriteStep() {
   };
 
   const handleSave = async () => {
-    if (!content.trim()) return;
     setSaveStatus('saving');
     setIsSaving(true);
-
     updateLetterData({ content, senderName });
 
-    let error;
-
-    if (letterData.shareCode) {
-      const { error: updateError } = await supabase
-        .from('letters')
-        .update({ content, sender_name: senderName })
-        .eq('share_code', letterData.shareCode);
-      error = updateError;
-    } else {
+    // Only interact with the database to get a share code if one doesn't exist.
+    // The actual content is not saved here anymore.
+    if (!letterData.shareCode) {
       const newShareCode = shortUUID.generate();
-      const newManagementToken = shortUUID.generate();
-      const { data, error: insertError } = await supabase
+      const { data, error } = await supabase
         .from('letters')
         .insert({
-          content,
-          sender_name: senderName,
           share_code: newShareCode,
-          management_token: newManagementToken,
+          sender_name: senderName, // Save sender name for identification
         })
         .select()
         .single();
+
+      if (error) {
+        console.error('Error creating letter entry:', error);
+        setSaveStatus('error');
+        setIsSaving(false);
+        return false;
+      }
 
       if (data) {
         updateLetterData({ shareCode: data.share_code, management_token: data.management_token });
         localStorage.setItem('unfinalizedShareCode', data.share_code);
       }
-      error = insertError;
-    }
-
-    if (error) {
-      console.error('Error saving letter:', error);
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-      setIsSaving(false);
-      return false;
     }
 
     setSaveStatus('saved');
@@ -95,11 +82,10 @@ export default function WriteStep() {
   };
 
   const handleNext = async () => {
-    const savedSuccessfully = await handleSave();
-    if (savedSuccessfully) {
-      const navigateTo = letterData.shareCode ? `/edit/${letterData.shareCode}/voice` : `/create/voice`;
-      router.push(navigateTo);
-    }
+    await handleSave();
+    // No need to check for success, as it doesn't block navigation anymore
+    const navigateTo = letterData.shareCode ? `/edit/${letterData.shareCode}/voice` : `/create/voice`;
+    router.push(navigateTo);
   };
 
   const handleDiscard = async () => {
@@ -109,16 +95,8 @@ export default function WriteStep() {
     if (!confirmed) return;
 
     try {
-      // Delete audio file from storage if it exists
-      if (letterData.audioUrl) {
-        const fileName = letterData.audioUrl.split('/').pop();
-        if (fileName) {
-          const { error: storageError } = await supabase.storage.from('voice-recordings').remove([fileName]);
-          if (storageError) console.error('Error deleting audio file:', storageError);
-        }
-      }
-
-      // Delete the letter from the database
+      // Only delete the record from the database.
+      // No need to delete from storage as nothing is uploaded until finalization.
       const { error: dbError } = await supabase.from('letters').delete().eq('share_code', letterData.shareCode);
       if (dbError) throw dbError;
 
