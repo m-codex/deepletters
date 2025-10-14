@@ -21,6 +21,7 @@ export type Letter = {
   view_count: number;
   finalized_at: string | null;
   is_paid: boolean;
+  storage_path: string | null;
 };
 
 export type Theme = {

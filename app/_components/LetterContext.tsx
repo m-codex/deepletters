@@ -65,36 +65,42 @@ export const LetterProvider = ({ children, shareCode }: { children: ReactNode, s
     }
   }, [letterData]);
 
+  const updateLetterData = useCallback((data: Partial<LetterData>) => {
+    setLetterData((prev) => ({ ...prev, ...data }));
+  }, []);
+
   useEffect(() => {
-    const loadLetter = async (code: string) => {
+    // If a shareCode is provided via URL, we fetch the *metadata*
+    // but not the content, which will be loaded from local storage.
+    const loadLetterMetadata = async (code: string) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('letters')
-        .select('*')
+        .select('share_code, sender_name, finalized_at, management_token')
         .eq('share_code', code)
         .maybeSingle();
 
       if (data) {
-        setLetterData(prev => ({
-          ...prev,
+        // We only update the metadata fields, preserving the content
+        // from local storage if the user is editing.
+        updateLetterData({
           shareCode: data.share_code,
-          content: data.content,
           senderName: data.sender_name || '',
-          musicId: data.music_id,
-          audioUrl: data.audio_url,
           finalized_at: data.finalized_at,
           management_token: data.management_token,
-        }));
+        });
       } else if (error) {
-        console.error('Error loading letter:', error);
+        console.error('Error loading letter metadata:', error);
       }
       setLoading(false);
     };
 
     if (shareCode && shareCode !== letterData.shareCode) {
-      loadLetter(shareCode);
+      loadLetterMetadata(shareCode);
+    } else {
+      setLoading(false);
     }
-  }, [shareCode, letterData.shareCode]);
+  }, [shareCode, letterData.shareCode, updateLetterData]);
 
   const updateLetterData = useCallback((data: Partial<LetterData>) => {
     setLetterData((prev) => ({ ...prev, ...data }));
