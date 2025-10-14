@@ -158,7 +158,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
         {!isOpened && (
           <>
-            {(letter.audio_url || letter.music_id) ? (
+            {(decryptedLetter.audioDataUrl || decryptedLetter.musicId) ? (
               <p className="text-secondary mb-8">
                 This letter contains audio. Headphones or speakers are recommended.
               </p>
