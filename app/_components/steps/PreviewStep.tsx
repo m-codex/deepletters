@@ -142,7 +142,7 @@ export default function PreviewStep() {
       onSecondaryClick={handleEdit}
     >
       <div
-        className="p-8 md:p-12 shadow-xl mb-8 relative bg-secondary-bg rounded-lg"
+        className="p-8 pt-12 md:p-12 shadow-xl mb-8 relative bg-secondary-bg rounded-lg"
       >
         <div className="absolute top-4 right-4 bg-btn-secondary text-primary-bg px-4 py-1 rounded-full text-sm font-bold">
           PREVIEW MODE
