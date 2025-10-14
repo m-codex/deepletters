@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLetterData } from '../useLetterData';
-import { Eye, Play, Pause, Music } from 'lucide-react';
+import { MailCheck, Play, Pause, Music } from 'lucide-react';
 import StepWrapper from './StepWrapper';
 import { supabase, Letter } from '@/_lib/supabase';
 import shortUUID from 'short-uuid';
@@ -134,7 +134,7 @@ export default function PreviewStep() {
     <StepWrapper
       title="Preview Your Letter"
       description="This is how your letter will appear to the recipient."
-      icon={<Eye className="w-8 h-8 text-btn-primary" />}
+      icon={<MailCheck className="w-8 h-8 text-btn-primary" />}
       buttonText={isLoading ? 'Finalizing...' : 'Finalize & Share'}
       onNext={handleFinalize}
       isNextDisabled={isLoading}
