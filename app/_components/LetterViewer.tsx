@@ -126,7 +126,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     );
   }
 
-  if (error || !letter) {
+  if (error || !decryptedLetter || !letterMetadata) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-bg">
         <div className="text-center">
