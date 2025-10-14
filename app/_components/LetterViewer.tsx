@@ -142,8 +142,8 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     );
   }
 
-  const expiresIn = letter.expires_at
-    ? Math.ceil((new Date(letter.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  const expiresIn = letterMetadata.expires_at
+    ? Math.ceil((new Date(letterMetadata.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   return (
