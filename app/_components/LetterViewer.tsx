@@ -179,14 +179,14 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
         {isOpened && (
           <>
             <div className="transition-all duration-1000 animate-fadeIn">
-              {letter.audio_url && (
+              {decryptedLetter.audio_url && (
                 <audio
                   ref={voiceAudioRef}
                   src={letter.audio_url}
                   onEnded={handleAudioEnd}
                 />
               )}
-               {letter.music_id && (
+               {decryptedLetter.music_id && (
                 <audio
                   ref={musicAudioRef}
                   src={`/music/${letter.music_id}.mp3`}
@@ -194,7 +194,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                 />
               )}
               <div className="bg-secondary-bg rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left">
-                {(letter.audio_url || letter.music_id) && (
+                {(decryptedLetter.audio_url || decryptedLetter.music_id) && (
                   <button
                     onClick={toggleAudio}
                     className="float-right w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
@@ -204,11 +204,11 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                 )}
                 <div className="prose prose-lg max-w-none mb-8 animate-fadeInUp text-primary">
                   <p className="whitespace-pre-wrap leading-relaxed text-lg font-serif">
-                    {letter.content}
+                    {decryptedLetter.content}
                   </p>
                 </div>
 
-                {!letter.is_permanent && expiresIn !== null && (
+                {!decryptedLetter.is_permanent && expiresIn !== null && (
                   <div className="mt-12 text-center">
                     <p className="text-sm text-secondary">
                       This letter expires in {expiresIn} {expiresIn === 1 ? 'day' : 'days'}.{' '}
@@ -222,7 +222,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                   </div>
                 )}
 
-                {letter.is_permanent && (
+                {decryptedLetter.is_permanent && (
                   <div className="mt-12 p-6 bg-secondary-bg border-2 border-btn-primary rounded-lg">
                     <div className="flex items-center gap-3 text-primary">
                       <Crown className="w-6 h-6 text-btn-primary" />
@@ -234,7 +234,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
             </div>
             <div className="text-center mt-8">
               <p className="text-sm opacity-75 text-secondary">
-                Created with <span className="text-btn-primary">♥</span> on Deepletter.org
+                Created with <span className="text-btn-primary">♥</span> on deepletters.org
               </p>
             </div>
           </>
