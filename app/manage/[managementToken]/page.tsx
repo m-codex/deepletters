@@ -1,5 +1,7 @@
 import LetterPage from "@/_components/LetterPage";
 
+export const dynamic = "force-dynamic";
+
 export default function Page({
   params,
 }: {
