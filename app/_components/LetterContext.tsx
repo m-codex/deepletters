@@ -102,10 +102,6 @@ export const LetterProvider = ({ children, shareCode }: { children: ReactNode, s
     }
   }, [shareCode, letterData.shareCode, updateLetterData]);
 
-  const updateLetterData = useCallback((data: Partial<LetterData>) => {
-    setLetterData((prev) => ({ ...prev, ...data }));
-  }, []);
-
   return (
     <LetterContext.Provider value={{ letterData, updateLetterData, loading }}>
       {children}
