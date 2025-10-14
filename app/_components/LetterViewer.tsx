@@ -153,7 +153,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
           <Mail className="w-12 h-12 text-btn-primary" />
         </div>
         <h1 className="text-4xl font-bold text-primary mb-4 font-serif">
-          A Letter from {letter.sender_name || 'A secret admirer'}
+          A Letter from {decryptedLetter.senderName || 'A secret admirer'}
         </h1>
 
         {!isOpened && (
