@@ -13,6 +13,7 @@ export type LetterData = {
   musicVolume: number;
   finalized_at: string | null;
   management_token: string | null;
+  theme: 'light' | 'dark';
 };
 
 interface LetterContextType {
@@ -33,6 +34,7 @@ const initialLetterData: LetterData = {
   musicVolume: 0.5,
   finalized_at: null,
   management_token: null,
+  theme: 'light',
 };
 
 export const LetterProvider = ({ children, shareCode }: { children: ReactNode, shareCode?: string }) => {

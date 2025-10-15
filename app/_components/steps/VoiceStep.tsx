@@ -192,8 +192,10 @@ export default function VoiceStep() {
             </div>
           )}
         </div>
-        <div className="bg-primary-bg rounded-md p-6 mb-8 max-h-64 overflow-y-auto">
-          <p className="text-secondary leading-relaxed font-serif whitespace-pre-wrap">
+        <div className={`rounded-md p-6 mb-8 max-h-64 overflow-y-auto ${
+          letterData.theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
+        }`}>
+          <p className="leading-relaxed font-serif whitespace-pre-wrap">
             {letterData.content}
           </p>
         </div>
