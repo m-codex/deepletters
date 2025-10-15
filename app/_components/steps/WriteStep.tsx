@@ -223,7 +223,7 @@ export default function WriteStep() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
                 rows={12}
-                className={`w-full px-4 py-3 sm:px-8 sm:py-5 md:px-12 md:py-8 ${
+                className={`w-full px-4 py-5 sm:px-8 sm:py-8 md:px-12 md:py-8 ${
                     letterData.theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
                 } rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg`}
             />
