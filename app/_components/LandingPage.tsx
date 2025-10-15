@@ -27,7 +27,7 @@ export default function LandingPage() {
             Send meaningful letters
           </h1>
 
-          <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto text-balance">
             Combine your words, voice, and more to make your message memorable and impactful.
           </p>
 
@@ -95,9 +95,10 @@ export default function LandingPage() {
           <div className="container mx-auto px-6 py-20 text-center bg-secondary-bg rounded-md">
           <Clock className="w-16 h-16 mx-auto mb-6 text-btn-primary" />
           <h2 className="text-4xl text-primary mb-4">Online Available for 7 Days</h2>
-          <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
-            Every letter is free and online accessible for 7 days. Want to keep it forever?
-            Download the letter within 7 days to save the letter in an encrypted file. Load the file anytime in the letter viewer of deepletters.org to access the letter.
+           <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
+            Every letter is free and available online for 7 days.<br />
+            Want to keep it forever? Download your letter within that time to save it as an encrypted file.<br />
+            Open the file anytime using the letter viewer on deepletters.org.
           </p>
             </div>
         </section>
