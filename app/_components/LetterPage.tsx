@@ -155,10 +155,16 @@ export default function LetterPage({
         <h2 className="text-4xl text-primary mb-4">Your Letter is Ready!</h2>
 
         <p className="text-secondary text-lg">
-          This letter is available for 7 days. You can view it or download the
-          encrypted file.
+          This letter is available for 7 days. You can view it or download the encrypted file for storage.
         </p>
         <div className="flex flex-col gap-3 my-8">
+          {timeLeft.expired ? (
+            <p className="text-red-300 text-base mt-2">The download link has expired.</p>
+          ) : (
+            <p className="text-white text-base mt-2">
+              Letter view and download expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+            </p>
+          )}
           <a
             href={shareUrl}
             target="_blank"
@@ -176,13 +182,7 @@ export default function LetterPage({
             <Download className="w-5 h-5" />
             Download Letter
           </button>
-          {timeLeft.expired ? (
-            <p className="text-red-500 text-sm mt-2">The download link has expired.</p>
-          ) : (
-            <p className="text-secondary text-sm mt-2">
-              Download expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-            </p>
-          )}
+          
         </div>
       </div>
 
