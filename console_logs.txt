@@ -1,0 +1,22 @@
+CONSOLE: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+CONSOLE: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+CONSOLE: Failed to load resource: the server responded with a status of 400 ()
+CONSOLE: Failed to load the PayPal JS SDK script. Error: The script "https://www.paypal.com/sdk/js?currency=USD&intent=capture" failed to load. Check the HTTP status code and response body in DevTools to learn more.
+CONSOLE: Failed to load the PayPal JS SDK script. Error: The script "https://www.paypal.com/sdk/js?currency=USD&intent=capture" failed to load. Check the HTTP status code and response body in DevTools to learn more.
+SCRIPT ERROR: Page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("text=Next Step")
+    - locator resolved to <button disabled class="w-full p-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">Next Step</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is not enabled
+     - retrying click action
+       - waiting 500ms

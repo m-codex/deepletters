@@ -40,8 +40,13 @@ export default function MusicStep() {
     }
 
     const categories: MusicCategory[] = [];
+    if (!folders) {
+      setLoading(false);
+      return;
+    }
+
     for (const folder of folders) {
-      if (folder.id === null) { // This filters for folders, which have a null id
+      if (folder.id === null) {
         const { data: tracks, error: tracksError } = await supabase.storage
           .from('music-tracks')
           .list(folder.name);
@@ -51,8 +56,12 @@ export default function MusicStep() {
           continue;
         }
 
+        if (!tracks) {
+          continue;
+        }
+
         const trackList: MusicTrack[] = tracks
-          .filter(track => !track.name.startsWith('.')) // a .folder is created by default
+          .filter(track => track.name !== '.emptyFolderPlaceholder')
           .map(track => {
             const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
             const encodedFolderPath = encodeURIComponent(folder.name);
@@ -66,13 +75,14 @@ export default function MusicStep() {
           });
 
         if (trackList.length > 0) {
-            categories.push({
-                name: folder.name,
-                tracks: trackList,
-              });
+          categories.push({
+            name: folder.name,
+            tracks: trackList,
+          });
         }
       }
     }
+
     setMusicCategories(categories);
     setLoading(false);
   };
