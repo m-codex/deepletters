@@ -147,12 +147,12 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary-bg text-center p-6">
+    <div className="flex justify-center bg-primary-bg text-center p-10">
       <div className="animate-fadeIn max-w-4xl w-full">
         <div className="w-24 h-24 bg-secondary-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
           <Mail className="w-12 h-12 text-btn-primary" />
         </div>
-        <h1 className="text-4xl font-bold text-primary mb-4 font-serif">
+        <h1 className="text-4xl font-bold text-primary mb-6 font-serif">
           A Letter from {decryptedLetter.senderName || 'A secret admirer'}
         </h1>
 
