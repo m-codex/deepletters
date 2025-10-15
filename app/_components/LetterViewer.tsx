@@ -147,7 +147,9 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     : null;
 
   return (
-    <div className="flex justify-center bg-primary-bg text-center p-10">
+    <div className={`flex justify-center text-center p-10 ${
+      letterMetadata.theme === 'light' ? 'bg-primary-bg' : 'bg-primary'
+    }`}>
       <div className="animate-fadeIn max-w-4xl w-full">
         <div className="w-24 h-24 bg-secondary-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
           <Mail className="w-12 h-12 text-btn-primary" />
@@ -193,7 +195,9 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                   loop
                 />
               )}
-              <div className="bg-secondary-bg rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left">
+              <div className={`rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left ${
+                letterMetadata.theme === 'light' ? 'bg-secondary-bg' : 'bg-gray-800'
+              }`}>
                 {(decryptedLetter.audioDataUrl || decryptedLetter.musicId) && (
                   <button
                     onClick={toggleAudio}
@@ -202,7 +206,9 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                     {isPlaying ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                   </button>
                 )}
-                <div className="prose prose-lg max-w-none mb-8 animate-fadeInUp text-primary">
+                <div className={`prose prose-lg max-w-none mb-8 animate-fadeInUp ${
+                  letterMetadata.theme === 'light' ? 'text-primary' : 'text-primary-bg'
+                }`}>
                   <p className="whitespace-pre-wrap leading-relaxed text-lg font-serif">
                     {decryptedLetter.content}
                   </p>

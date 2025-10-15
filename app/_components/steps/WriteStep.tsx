@@ -17,7 +17,6 @@ export default function WriteStep() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     setContent(letterData.content);
@@ -60,6 +59,7 @@ export default function WriteStep() {
           share_code: newShareCode,
           sender_name: senderName, // Save sender name for identification
           content: content,
+          theme: letterData.theme,
         })
         .select()
         .single();
@@ -124,7 +124,7 @@ export default function WriteStep() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    updateLetterData({ theme: letterData.theme === 'light' ? 'dark' : 'light' });
   };
 
   return (
@@ -214,7 +214,7 @@ export default function WriteStep() {
                 placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
                 rows={12}
                 className={`w-full px-4 py-3 sm:px-8 sm:py-5 md:px-12 md:py-8 ${
-                  theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
+                  letterData.theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
                 } border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg`}
               />
               <div className="flex justify-between items-center">
@@ -224,7 +224,7 @@ export default function WriteStep() {
                   className="p-2 rounded-full hover:bg-secondary-bg"
                   aria-label="Toggle Theme"
                 >
-                  {theme === 'light' ? (
+                  {letterData.theme === 'light' ? (
                     <Sun className="w-5 h-5 text-secondary" />
                   ) : (
                     <Moon className="w-5 h-5 text-secondary" />
