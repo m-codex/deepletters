@@ -12,14 +12,15 @@ const formatTimeLeft = (expirationDate: Date) => {
   const timeLeft = expirationDate.getTime() - now.getTime();
 
   if (timeLeft <= 0) {
-    return { days: 0, hours: 0, minutes: 0, expired: true };
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
   }
 
   const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
   const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-  return { days, hours, minutes, expired: false };
+  return { days, hours, minutes, seconds, expired: false };
 };
 
 export default function LetterPage({
@@ -33,7 +34,7 @@ export default function LetterPage({
   const [letter, setLetter] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ days: 7, hours: 0, minutes: 0, expired: false });
+  const [timeLeft, setTimeLeft] = useState({ days: 7, hours: 0, minutes: 0, seconds: 0, expired: false });
 
   const fetchData = useCallback(async () => {
     try {
@@ -71,7 +72,7 @@ export default function LetterPage({
       };
 
       updateTimer();
-      const timerId = setInterval(updateTimer, 60000); // Update every minute
+      const timerId = setInterval(updateTimer, 1000); // Update every second
 
       return () => clearInterval(timerId);
     }
@@ -111,8 +112,9 @@ export default function LetterPage({
       const letterContent = JSON.parse(decryptedJson);
       const senderName = letterContent.senderName || 'Anonymous';
 
-      const timestamp = new Date(letter.created_at).toISOString().replace(/[-:.]/g, '').slice(0, 14);
-      const filename = `${timestamp}_A_Letter_from_${senderName}.json`;
+      const date = new Date(letter.created_at);
+      const timestamp = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}${date.getSeconds().toString().padStart(2, '0')}`;
+      const filename = `${timestamp}_A_Letter_from_${senderName}.dpl`;
 
       const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
       const link = document.createElement('a');
@@ -178,7 +180,7 @@ export default function LetterPage({
             <p className="text-red-500 text-sm mt-2">The download link has expired.</p>
           ) : (
             <p className="text-secondary text-sm mt-2">
-              Download expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
+              Download expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
             </p>
           )}
         </div>
