@@ -26,11 +26,6 @@ export default function LandingPage() {
           <h1 className="text-4xl md:text-6xl text-white mb-6 leading-tight text-balance">
             Send meaningful letters
           </h1>
-          <div className="bg-primary max-2-3xl mx-auto rounded-t-2xl p-4 md:p-8">
-          <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto text-balance">
-            Combine your words, voice, and more to make your message memorable and impactful.
-          </p>
-          </div>
           <div style={{
             position: 'absolute',
             left: '-5000px',
@@ -47,6 +42,12 @@ export default function LandingPage() {
               aria-hidden="true"
             />
           </div>
+          <div className="max-2-3xl mx-auto rounded-t-4xl p-4 md:p-8 bg-linear-to-t from-primary-bg to-primary">
+          <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto text-balance">
+            Combine your words, voice, and more to make your message memorable and impactful.
+          </p>
+          </div>
+         
 
           <button
             onClick={() => {
@@ -55,7 +56,7 @@ export default function LandingPage() {
               }
               router.push('/create/write');
             }}
-            className="px-8 py-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="-mt-8 px-8 py-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             Create Your Letter
           </button>
