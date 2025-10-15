@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     ],
   },
   other: {
-    "msapplication-TileColor": "#da532c",
+    "msapplication-TileColor": "#262626",
     "msapplication-TileImage": "/images/favicon/mstile-150x150.png",
     "msapplication-config": "/browserconfig.xml",
   },
