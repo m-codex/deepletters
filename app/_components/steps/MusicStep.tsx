@@ -41,7 +41,7 @@ export default function MusicStep() {
 
     const categories: MusicCategory[] = [];
     for (const folder of folders) {
-      if (folder.id !== null) { // This filters out files at the root, which are folders
+      if (folder.id === null) { // This filters for folders, which have a null id
         const { data: tracks, error: tracksError } = await supabase.storage
           .from('music-tracks')
           .list(folder.name);
