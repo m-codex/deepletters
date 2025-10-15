@@ -110,7 +110,8 @@ export default function WriteStep() {
         senderName: '',
         audioBlob: null,
         audioUrl: null,
-        musicId: null,
+        musicUrl: null,
+        musicVolume: 0.5,
         finalized_at: null,
         management_token: null,
       });

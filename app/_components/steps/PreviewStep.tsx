@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLetterData } from '../useLetterData';
-import { MailCheck, Play, Pause, Music } from 'lucide-react';
+import { MailCheck, Play, Pause } from 'lucide-react';
 import StepWrapper from './StepWrapper';
 import { supabase, Letter } from '@/_lib/supabase';
 import shortUUID from 'short-uuid';
@@ -15,35 +15,46 @@ import {
 
 export default function PreviewStep() {
   const router = useRouter();
-  const { letterData } = useLetterData();
+  const { letterData, updateLetterData } = useLetterData();
   const [isLoading, setIsLoading] = useState(false);
-  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const voiceAudioRef = useRef<HTMLAudioElement>(null);
   const musicAudioRef = useRef<HTMLAudioElement>(null);
 
-  const toggleVoice = () => {
-    if (voiceAudioRef.current) {
-      if (isVoicePlaying) {
-        voiceAudioRef.current.pause();
-      } else {
-        voiceAudioRef.current.play();
-      }
-      setIsVoicePlaying(!isVoicePlaying);
+  const togglePlayPause = () => {
+    const voiceAudio = voiceAudioRef.current;
+    const musicAudio = musicAudioRef.current;
+
+    if (isPlaying) {
+      voiceAudio?.pause();
+      musicAudio?.pause();
+      setIsPlaying(false);
+    } else {
+      voiceAudio?.play();
+      musicAudio?.play();
+      setIsPlaying(true);
     }
   };
 
-  const toggleMusic = () => {
-    if (musicAudioRef.current) {
-      if (isMusicPlaying) {
-        musicAudioRef.current.pause();
-      } else {
-        musicAudioRef.current.play();
-      }
-      setIsMusicPlaying(!isMusicPlaying);
-    }
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const volume = parseFloat(e.target.value);
+    updateLetterData({ musicVolume: volume });
   };
+
+  useEffect(() => {
+    if (musicAudioRef.current) {
+      musicAudioRef.current.volume = letterData.musicVolume;
+    }
+  }, [letterData.musicVolume]);
+
+  const handleOnEnded = () => {
+    setIsPlaying(false);
+    if (musicAudioRef.current) {
+        musicAudioRef.current.pause();
+        musicAudioRef.current.currentTime = 0;
+    }
+  }
 
   const handleEdit = () => {
     router.push('/create/write');
@@ -77,7 +88,8 @@ export default function PreviewStep() {
         content: letterData.content,
         audioDataUrl: audioDataUrl,
         senderName: letterData.senderName,
-        musicId: letterData.musicId,
+        musicUrl: letterData.musicUrl,
+        musicVolume: letterData.musicVolume,
       };
 
       // 3. Encrypt the data
@@ -152,36 +164,42 @@ export default function PreviewStep() {
           <audio
             ref={voiceAudioRef}
             src={letterData.audioUrl}
-            onEnded={() => setIsVoicePlaying(false)}
+            onEnded={handleOnEnded}
           />
         )}
-        {letterData.musicId && (
+        {letterData.musicUrl && (
           <audio
             ref={musicAudioRef}
-            src={`/music/${letterData.musicId}.mp3`}
-            onEnded={() => setIsMusicPlaying(false)}
+            src={letterData.musicUrl}
             loop
           />
         )}
 
         <div className="flex items-center gap-4 mb-6">
-          {letterData.audioUrl && (
+          {(letterData.audioUrl || letterData.musicUrl) && (
             <button
-              onClick={toggleVoice}
+              onClick={togglePlayPause}
               className="flex items-center gap-2 bg-btn-primary text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transition-all"
             >
-              {isVoicePlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              <span>{isVoicePlaying ? 'Pause' : 'Play'} Voice</span>
+              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
             </button>
           )}
-          {letterData.musicId && (
-            <button
-              onClick={toggleMusic}
-              className="flex items-center gap-2 bg-btn-primary text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transition-all"
-            >
-              {isMusicPlaying ? <Pause className="w-5 h-5" /> : <Music className="w-5 h-5" />}
-              <span>{isMusicPlaying ? 'Pause' : 'Play'} Music</span>
-            </button>
+
+          {letterData.musicUrl && (
+            <div className="flex items-center gap-2">
+              <label htmlFor="volume" className="text-sm text-secondary">Music Volume</label>
+              <input
+                type="range"
+                id="volume"
+                min="0"
+                max="1"
+                step="0.05"
+                value={letterData.musicVolume}
+                onChange={handleVolumeChange}
+                className="w-32"
+              />
+            </div>
           )}
         </div>
 

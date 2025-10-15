@@ -3,45 +3,93 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Music, Check } from 'lucide-react';
-import { supabase, MusicTrack } from '@/_lib/supabase';
+import { supabase } from '@/_lib/supabase';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
+
+type MusicTrack = {
+  name: string;
+  url: string;
+};
+
+type MusicCategory = {
+  name: string;
+  tracks: MusicTrack[];
+};
 
 export default function MusicStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
-  const [tracks, setTracks] = useState<MusicTrack[]>([]);
-  const [selectedMusicId, setSelectedMusicId] = useState<string | null>(letterData.musicId);
+  const [musicCategories, setMusicCategories] = useState<MusicCategory[]>([]);
+  const [selectedMusicUrl, setSelectedMusicUrl] = useState<string | null>(letterData.musicUrl);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadTracks();
+    loadMusicFromStorage();
   }, []);
 
-  const loadTracks = async () => {
-    const { data, error } = await supabase
-      .from('music_tracks')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at');
+  const loadMusicFromStorage = async () => {
+    const { data: folders, error: foldersError } = await supabase.storage
+      .from('music-tracks')
+      .list();
 
-    if (error) {
-      console.error('Error loading music tracks:', error);
-    } else if (data) {
-      setTracks(data);
+    if (foldersError) {
+      console.error('Error loading music categories:', foldersError);
+      setLoading(false);
+      return;
     }
+
+    const categories: MusicCategory[] = [];
+    if (!folders) {
+      setLoading(false);
+      return;
+    }
+
+    for (const folder of folders) {
+      if (folder.id === null) {
+        const { data: tracks, error: tracksError } = await supabase.storage
+          .from('music-tracks')
+          .list(folder.name);
+
+        if (tracksError) {
+          console.error(`Error loading tracks for category ${folder.name}:`, tracksError);
+          continue;
+        }
+
+        if (!tracks) {
+          continue;
+        }
+
+        const trackList: MusicTrack[] = tracks
+          .filter(track => track.name !== '.emptyFolderPlaceholder')
+          .map(track => {
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+            const encodedFolderPath = encodeURIComponent(folder.name);
+            const encodedTrackPath = encodeURIComponent(track.name);
+            const publicUrl = `${supabaseUrl}/storage/v1/object/public/music-tracks/${encodedFolderPath}/${encodedTrackPath}`;
+
+            return {
+              name: track.name.replace(/\.(mp3|wav|ogg)$/, ''),
+              url: publicUrl,
+            };
+          });
+
+        if (trackList.length > 0) {
+          categories.push({
+            name: folder.name,
+            tracks: trackList,
+          });
+        }
+      }
+    }
+
+    setMusicCategories(categories);
     setLoading(false);
   };
 
   const handleNext = () => {
-    updateLetterData({ musicId: selectedMusicId });
+    updateLetterData({ musicUrl: selectedMusicUrl });
     router.push('/create/preview');
-  };
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (loading) {
@@ -64,9 +112,9 @@ export default function MusicStep() {
       <div className="bg-secondary-bg shadow-xl p-8 md:p-12 mb-8">
         <div className="space-y-4 mb-8">
           <button
-            onClick={() => setSelectedMusicId(null)}
+            onClick={() => setSelectedMusicUrl(null)}
             className={`w-full flex items-center justify-between p-6 rounded-md border-2 transition-all duration-200 ${
-              selectedMusicId === null
+              selectedMusicUrl === null
                 ? 'border-btn-primary bg-primary-bg'
                 : 'border-secondary'
             }`}
@@ -80,40 +128,42 @@ export default function MusicStep() {
                 <p className="text-sm text-secondary">Silent letter</p>
               </div>
             </div>
-            {selectedMusicId === null && (
+            {selectedMusicUrl === null && (
               <div className="w-6 h-6 bg-btn-primary rounded-full flex items-center justify-center">
                 <Check className="w-4 h-4 text-white" />
               </div>
             )}
           </button>
 
-          {tracks.map((track) => (
-            <button
-              key={track.id}
-              onClick={() => setSelectedMusicId(track.id)}
-              className={`w-full flex items-center justify-between p-6 rounded-md border-2 transition-all duration-200 ${
-                selectedMusicId === track.id
-                  ? 'border-btn-primary bg-primary-bg'
-                  : 'border-secondary'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center">
-                  <Music className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-primary">{track.name}</h3>
-                  <p className="text-sm text-secondary">
-                    {track.artist} • {formatDuration(track.duration)}
-                  </p>
-                </div>
-              </div>
-              {selectedMusicId === track.id && (
-                <div className="w-6 h-6 bg-btn-primary rounded-full flex items-center justify-center">
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </button>
+          {musicCategories.map((category) => (
+            <div key={category.name}>
+              <h2 className="text-xl font-bold text-primary mt-8 mb-4">{category.name}</h2>
+              {category.tracks.map((track) => (
+                <button
+                  key={track.url}
+                  onClick={() => setSelectedMusicUrl(track.url)}
+                  className={`w-full flex items-center justify-between p-6 rounded-md border-2 transition-all duration-200 mb-4 ${
+                    selectedMusicUrl === track.url
+                      ? 'border-btn-primary bg-primary-bg'
+                      : 'border-secondary'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center">
+                      <Music className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-primary">{track.name}</h3>
+                    </div>
+                  </div>
+                  {selectedMusicUrl === track.url && (
+                    <div className="w-6 h-6 bg-btn-primary rounded-full flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
       </div>
