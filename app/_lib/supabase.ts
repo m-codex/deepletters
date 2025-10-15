@@ -6,9 +6,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type Letter = {
-  id: string;
+  id:string;
   content: string;
-  theme_id: string;
+  theme: 'light' | 'dark';
   music_id: string | null;
   audio_url: string | null;
   share_code: string;
