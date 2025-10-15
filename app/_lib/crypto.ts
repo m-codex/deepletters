@@ -49,15 +49,23 @@ export async function decryptData(key: CryptoKey, data: ArrayBuffer): Promise<Ar
   );
 }
 
-// Export a CryptoKey to a base64 string for storage or transport
+// Export a CryptoKey to a URL-safe base64 string for transport
 export async function exportKeyToString(key: CryptoKey): Promise<string> {
   const exported = await crypto.subtle.exportKey('raw', key);
-  return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(exported))));
+  const base64 = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(exported))));
+  // Make base64 URL-safe
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-// Import a CryptoKey from a base64 string
+// Import a CryptoKey from a URL-safe base64 string
 export async function importKeyFromString(keyString: string): Promise<CryptoKey> {
-  const binaryString = atob(keyString);
+  // URL-safe base64 to standard base64
+  let base64 = keyString.replace(/-/g, '+').replace(/_/g, '/');
+  // Pad with '=' chars
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  const binaryString = atob(base64);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
