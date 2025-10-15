@@ -26,11 +26,11 @@ export default function LandingPage() {
           <h1 className="text-4xl md:text-6xl text-white mb-6 leading-tight text-balance">
             Send meaningful letters
           </h1>
-
+          <div className="bg-primary max-2-3xl mx-auto rounded-t-2xl p-4 md:p-8">
           <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto text-balance">
             Combine your words, voice, and more to make your message memorable and impactful.
           </p>
-
+          </div>
           <div style={{
             position: 'absolute',
             left: '-5000px',
