@@ -210,11 +210,7 @@ export default function PreviewStep() {
             {letterData.content}
           </p>
         </div>
-        {letterData.senderName && (
-          <p className="text-right mt-8 text-primary">
-            - {letterData.senderName}
-          </p>
-        )}
+
       </div>
     </StepWrapper>
   );
