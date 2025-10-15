@@ -118,6 +118,7 @@ export default function PreviewStep() {
         expires_at: expiresAt.toISOString(),
         management_token: managementToken,
         storage_path: filePath,
+        theme: letterData.theme,
         // content and audio_url are no longer stored directly
       };
 
