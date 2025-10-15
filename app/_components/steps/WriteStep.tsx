@@ -52,6 +52,8 @@ export default function WriteStep() {
     // Only interact with the database to get a share code if one doesn't exist.
     // The actual content is not saved here anymore.
     if (!letterData.shareCode) {
+      // The share_code is generated using short-uuid, which has a very low probability of collisions.
+      // For this application's scale, it's considered unique enough.
       const newShareCode = shortUUID.generate();
       const { data, error } = await supabase
         .from('letters')
