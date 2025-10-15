@@ -60,7 +60,7 @@ export default function LandingPage() {
             Create Your Letter
           </button>
           <p className="mt-6 text-sm text-secondary">
-            Free to create • Available for 7 days • Buy stamp to keep forever
+            Free to create • Available online for 7 days • Download and keep forever
           </p>
         </section>
 
@@ -85,8 +85,8 @@ export default function LandingPage() {
             />
             <FeatureCard
               icon={<QrCode className="w-8 h-8" />}
-              title="Share Instantly or Scheduled"
-              description="Share via link or QR code"
+              title="Share Instantly"
+              description="Share via link and download it"
             />
           </div>
         </section>
@@ -94,10 +94,10 @@ export default function LandingPage() {
         <section className="container mx-auto px-6">
           <div className="container mx-auto px-6 py-20 text-center bg-secondary-bg rounded-md">
           <Clock className="w-16 h-16 mx-auto mb-6 text-btn-primary" />
-          <h2 className="text-4xl text-primary mb-4">Free for 7 Days</h2>
+          <h2 className="text-4xl text-primary mb-4">Online Available for 7 Days</h2>
           <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
-            Every letter is free and accessible for 7 days. Want to keep it forever?
-            Either the sender or receiver can upgrade a letter to permanent storage anytime.
+            Every letter is free and online accessible for 7 days. Want to keep it forever?
+            Download the letter within 7 days to save the letter in an encrypted file. Load the file anytime in the letter viewer of deepletters.org to access the letter.
           </p>
             </div>
         </section>
