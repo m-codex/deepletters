@@ -175,6 +175,17 @@ export default function WriteStep() {
                     From: <span className="font-bold cursor-pointer">{senderName}</span>
                   </p>
                 )}
+                <div className="flex gap-2">
+                {letterData.shareCode && (
+          
+            <button
+              onClick={handleDiscard}
+              className="text-sm text-btn-primary hover:underline"
+            >
+              New
+            </button>
+          
+        )}
                 <button
                   onClick={handleSave}
                   disabled={saveStatus === 'saving'}
@@ -188,6 +199,7 @@ export default function WriteStep() {
                     ? 'Error!'
                     : 'Save'}
                 </button>
+                </div>
               </div>
               <textarea
                 id="letterContent"
@@ -197,20 +209,11 @@ export default function WriteStep() {
                 rows={12}
                 className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg"
               />
-              <div className="flex justify-between">
+              <div className="flex justify-end">
               <p className="mt-2 text-sm text-secondary">
                 {content.split(/\s+/).filter(Boolean).length} words
               </p>
-                {letterData.shareCode && (
-          
-            <button
-              onClick={handleDiscard}
-              className="text-sm text-red-400 hover:underline"
-            >
-              Discard
-            </button>
-          
-        )}
+
                 </div>
             </div>
           </>
