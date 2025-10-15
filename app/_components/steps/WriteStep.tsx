@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { PenLine } from 'lucide-react';
+import { PenLine, Sun, Moon } from 'lucide-react';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
 import { supabase } from '@/_lib/supabase';
@@ -17,6 +17,7 @@ export default function WriteStep() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     setContent(letterData.content);
@@ -121,6 +122,10 @@ export default function WriteStep() {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
   return (
     <StepWrapper
       title="Write Your Letter"
@@ -207,14 +212,24 @@ export default function WriteStep() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
                 rows={12}
-                className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg"
+                className={`w-full px-4 py-3 ${
+                  theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
+                } border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg`}
               />
-              <div className="flex justify-end">
-              <p className="mt-2 text-sm text-secondary">
-                {content.split(/\s+/).filter(Boolean).length} words
-              </p>
-
-                </div>
+              <div className="mt-2 flex justify-between items-center">
+                <p className="text-sm text-secondary">{content.split(/\s+/).filter(Boolean).length} words</p>
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full hover:bg-secondary-bg"
+                  aria-label="Toggle Theme"
+                >
+                  {theme === 'light' ? (
+                    <Sun className="w-5 h-5 text-secondary" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-secondary" />
+                  )}
+                </button>
+              </div>
             </div>
           </>
         )}
