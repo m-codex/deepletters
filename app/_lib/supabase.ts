@@ -9,7 +9,8 @@ export type Letter = {
   id:string;
   content: string;
   theme: 'light' | 'dark';
-  music_id: string | null;
+  music_url: string | null;
+  music_volume: number | null;
   audio_url: string | null;
   share_code: string;
   management_token: string | null;
