@@ -94,7 +94,7 @@ export default function LandingPage() {
         <section className="container mx-auto px-6">
           <div className="container mx-auto px-6 py-20 text-center bg-secondary-bg rounded-md">
           <Clock className="w-16 h-16 mx-auto mb-6 text-btn-primary" />
-          <h2 className="text-4xl text-primary mb-4">Online Available for 7 Days</h2>
+          <h2 className="text-4xl text-primary mb-4">Available Online for 7 Days</h2>
            <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
             Every letter is free and available online for 7 days.<br />
             Want to keep it forever? Download your letter within that time to save it as an encrypted file.<br />
