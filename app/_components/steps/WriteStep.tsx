@@ -225,7 +225,7 @@ export default function WriteStep() {
                 rows={12}
                 className={`w-full px-4 py-3 sm:px-8 sm:py-5 md:px-12 md:py-8 ${
                     letterData.theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
-                } border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg`}
+                } rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg`}
             />
             <div className="flex justify-between items-center">
                 <p className="text-sm text-secondary">{content.split(/\s+/).filter(Boolean).length} words</p>
