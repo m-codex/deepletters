@@ -54,12 +54,14 @@ export default function MusicStep() {
         const trackList: MusicTrack[] = tracks
           .filter(track => !track.name.startsWith('.')) // a .folder is created by default
           .map(track => {
-            const { data } = supabase.storage
-              .from('music-tracks')
-              .getPublicUrl(`${folder.name}/${track.name}`);
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+            const encodedFolderPath = encodeURIComponent(folder.name);
+            const encodedTrackPath = encodeURIComponent(track.name);
+            const publicUrl = `${supabaseUrl}/storage/v1/object/public/music-tracks/${encodedFolderPath}/${encodedTrackPath}`;
+
             return {
               name: track.name.replace(/\.(mp3|wav|ogg)$/, ''),
-              url: data.publicUrl,
+              url: publicUrl,
             };
           });
 
