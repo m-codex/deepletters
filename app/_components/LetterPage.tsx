@@ -80,7 +80,7 @@ export default function LetterPage({
 
   const shareUrl = letter
     ? `${window.location.origin}/letter/${letter.share_code}${
-        encryptionKey ? `#${encodeURIComponent(encryptionKey)}` : ''
+        encryptionKey ? `#${encryptionKey}` : ''
       }`
     : '';
 
