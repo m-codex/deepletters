@@ -172,10 +172,10 @@ export default function WriteStep() {
                   />
                 ) : (
                   <p className="text-primary" onClick={() => setIsEditingName(true)}>
-                    From: <span className="font-bold cursor-pointer">{senderName}</span>
+                    From: <span className="cursor-pointer">{senderName}</span>
                   </p>
                 )}
-                <div className="flex gap-2">
+                <div className="flex gap-4">
                 {letterData.shareCode && (
           
             <button
