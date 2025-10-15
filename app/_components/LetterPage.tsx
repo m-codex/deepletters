@@ -1,10 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { Share2, Copy, Check, Loader2, Eye, Mail, Stamp } from 'lucide-react';
-import PayPalButton, { PayPalOrder } from './PayPalButton';
+import { useRouter } from 'next/navigation';
+import { Share2, Copy, Check, Loader2, Eye, Mail, Download } from 'lucide-react';
 import { supabase, Letter } from '@/_lib/supabase';
+import { importKeyFromString, decryptData } from '@/_lib/crypto';
+
+// Helper function to format the remaining time
+const formatTimeLeft = (expirationDate: Date) => {
+  const now = new Date();
+  const timeLeft = expirationDate.getTime() - now.getTime();
+
+  if (timeLeft <= 0) {
+    return { days: 0, hours: 0, minutes: 0, expired: true };
+  }
+
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+  return { days, hours, minutes, expired: false };
+};
 
 export default function LetterPage({
   managementToken,
@@ -17,27 +33,7 @@ export default function LetterPage({
   const [letter, setLetter] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [showPayPal, setShowPayPal] = useState(false);
-
-  const handlePaymentSuccess = async (order: PayPalOrder) => {
-    console.log('Payment successful:', order);
-
-    if (letter) {
-      const { error } = await supabase
-        .from('letters')
-        .update({ is_paid: true })
-        .eq('share_code', letter.share_code);
-
-      if (error) {
-        console.error('Error updating payment status:', error);
-        alert('Payment was successful, but we could not update your letter. Please contact support.');
-      } else {
-        alert('Thank you for your purchase! Your letter is now saved forever.');
-        setLetter({ ...letter, is_paid: true });
-      }
-    }
-    setShowPayPal(false);
-  };
+  const [timeLeft, setTimeLeft] = useState({ days: 7, hours: 0, minutes: 0, expired: false });
 
   const fetchData = useCallback(async () => {
     try {
@@ -67,6 +63,20 @@ export default function LetterPage({
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    if (letter?.created_at) {
+      const expirationDate = new Date(new Date(letter.created_at).getTime() + 7 * 24 * 60 * 60 * 1000);
+      const updateTimer = () => {
+        setTimeLeft(formatTimeLeft(expirationDate));
+      };
+
+      updateTimer();
+      const timerId = setInterval(updateTimer, 60000); // Update every minute
+
+      return () => clearInterval(timerId);
+    }
+  }, [letter?.created_at]);
+
   const shareUrl = letter
     ? `${window.location.origin}/letter/${letter.share_code}${
         encryptionKey ? `#${encryptionKey}` : ''
@@ -78,6 +88,42 @@ export default function LetterPage({
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!letter || !letter.storage_path || !encryptionKey) {
+      alert('Could not download letter. Information missing.');
+      return;
+    }
+
+    try {
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from('encrypted-letters')
+        .download(letter.storage_path);
+
+      if (fileError) throw fileError;
+
+      const encryptionKeyObj = await importKeyFromString(encryptionKey);
+      const arrayBuffer = await fileData.arrayBuffer();
+      const decryptedBuffer = await decryptData(encryptionKeyObj, arrayBuffer);
+      const decryptedJson = new TextDecoder().decode(decryptedBuffer);
+      const letterContent = JSON.parse(decryptedJson);
+      const senderName = letterContent.senderName || 'Anonymous';
+
+      const timestamp = new Date(letter.created_at).toISOString().replace(/[-:.]/g, '').slice(0, 14);
+      const filename = `${timestamp}_A_Letter_from_${senderName}.json`;
+
+      const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error downloading or decrypting letter:', err);
+      alert('Failed to download the letter.');
     }
   };
 
@@ -107,53 +153,43 @@ export default function LetterPage({
         <h2 className="text-4xl text-primary mb-4">Your Letter is Ready!</h2>
 
         <p className="text-secondary text-lg">
-          This letter is free available for 7 days. Add a digital stamp to keep it forever — one purchase gives lifetime access to both.
+          This letter is available for 7 days. You can view it or download the
+          encrypted file.
         </p>
         <div className="flex flex-col gap-3 my-8">
-          {letter?.is_paid ? (
-            <div className="flex-1 py-3 px-4 bg-green-500 text-white rounded-md font-semibold text-lg flex items-center justify-center gap-2">
-              <Stamp className="w-5 h-5" />
-              Paid
-            </div>
-          ) : showPayPal ? (
-            <div className="flex flex-col items-center bg-white rounded-md p-4">
-              <PayPalButton amount="1.00" onPaymentSuccess={handlePaymentSuccess} />
-              <button
-                onClick={() => setShowPayPal(false)}
-                className="mt-2 text-sm text-btn-primary hover:underline"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowPayPal(true)}
-              className="flex-1 py-3 px-4 bg-btn-primary text-white rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
-            >
-              <Stamp className="w-5 h-5" />
-              Buy Stamp for 1$
-            </button>
-          )}
           <a
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-3 px-4 bg-btn-secondary text-bg-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+            className="flex-1 py-3 px-4 bg-btn-primary text-white rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
           >
             <Eye className="w-5 h-5" />
             View Letter
-          </a>          
+          </a>
+          <button
+            onClick={handleDownload}
+            disabled={timeLeft.expired}
+            className="flex-1 py-3 px-4 bg-btn-secondary text-bg-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <Download className="w-5 h-5" />
+            Download Letter
+          </button>
+          {timeLeft.expired ? (
+            <p className="text-red-500 text-sm mt-2">The download link has expired.</p>
+          ) : (
+            <p className="text-secondary text-sm mt-2">
+              Download expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
+            </p>
+          )}
         </div>
       </div>
 
       <div className="bg-secondary-bg shadow-xl p-8 md:p-12 mb-8">
-          
-        
         <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-bg rounded-full mb-4">
-          <Share2 className="w-8 h-8 text-btn-primary" />
-        </div>
-            <h2 className="text-4xl text-primary mb-4">Send Your Letter</h2>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-bg rounded-full mb-4">
+            <Share2 className="w-8 h-8 text-btn-primary" />
+          </div>
+          <h2 className="text-4xl text-primary mb-4">Send Your Letter</h2>
           <label className="block text-left text-sm text-secondary mb-3">
             Share Link
           </label>
@@ -166,7 +202,7 @@ export default function LetterPage({
             />
             <button
               onClick={copyToClipboard}
-              className="px-6 py-3 bg-btn-primary text-white rounded-md font-semibold flex items-center gap-2 hover:shadow-lg transition-shadow"
+              className="px-6 py-3 bg-btn-primary text-white rounded-md font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
             >
               {copied ? (
                 <>
@@ -182,27 +218,6 @@ export default function LetterPage({
             </button>
           </div>
         </div>
-{/*
-<div className="mb-8">
-  <label className="block text-sm text-secondary mb-3">
-    QR Code
-  </label>
-  <div className="flex justify-center bg-white rounded-md p-8">
-    {qrCodeUrl && (
-      <img
-        src={qrCodeUrl}
-        alt="QR Code"
-        className="w-64 h-64 rounded-xl shadow-md"
-      />
-    )}
-  </div>
-  <p className="text-center text-sm text-secondary mt-4">
-    Scan this code to open the letter
-  </p>
-</div>
-*/}
-
-
       </div>
 
       <button

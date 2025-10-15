@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import PayPalProvider from "@/_components/PayPalProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,9 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <PayPalProvider>{children}</PayPalProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
