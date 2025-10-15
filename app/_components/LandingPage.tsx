@@ -97,7 +97,7 @@ export default function LandingPage() {
           <h2 className="text-4xl text-primary mb-4">Available Online for 7 Days</h2>
            <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
             Every letter is free and available online for 7 days.<br />
-            Want to keep it forever? Download your letter within that time to save it as an encrypted file.<br />
+            <strong>Want to keep it forever?</strong> Download your letter within that time to save it as an encrypted file.<br />
             Open the file anytime using the letter viewer on deepletters.org.
           </p>
             </div>
