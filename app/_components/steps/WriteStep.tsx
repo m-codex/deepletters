@@ -216,7 +216,7 @@ export default function WriteStep() {
                   theme === 'light' ? 'bg-primary-bg text-primary' : 'bg-primary text-primary-bg'
                 } border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg`}
               />
-              <div className="mt-2 flex justify-between items-center">
+              <div className="flex justify-between items-center">
                 <p className="text-sm text-secondary">{content.split(/\s+/).filter(Boolean).length} words</p>
                 <button
                   onClick={toggleTheme}
