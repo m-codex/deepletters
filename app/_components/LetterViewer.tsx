@@ -42,7 +42,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
         setError('Letter not found or has expired.');
         return;
       }
-      if (letterData.expires_at && new Date(letterData.expires_at) < new Date() && !letterData.is_permanent) {
+      if (letterData.expires_at && new Date(letterData.expires_at) < new Date()) {
         setError('This letter has expired.');
         return;
       }
@@ -121,9 +121,6 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     }
   };
 
-  const handleUpgrade = async () => {
-    alert('Payment integration coming soon! This would upgrade the letter to permanent storage.');
-  };
 
   if (loading) {
     return (
@@ -221,26 +218,11 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                   </p>
                 </div>
 
-                {!letterMetadata.is_permanent && expiresIn !== null && (
+                {expiresIn !== null && (
                   <div className="mt-12 text-center">
                     <p className="text-sm text-secondary">
-                      This letter expires in {expiresIn} {expiresIn === 1 ? 'day' : 'days'}.{' '}
-                      <button
-                        onClick={handleUpgrade}
-                        className="font-semibold text-btn-primary hover:underline bg-transparent border-none p-0 cursor-pointer"
-                      >
-                        Keep it forever.
-                      </button>
+                      This letter expires in {expiresIn} {expiresIn === 1 ? 'day' : 'days'}.
                     </p>
-                  </div>
-                )}
-
-                {letterMetadata.is_permanent && (
-                  <div className="mt-12 p-6 bg-secondary-bg border-2 border-btn-primary rounded-lg">
-                    <div className="flex items-center gap-3 text-primary">
-                      <Crown className="w-6 h-6 text-btn-primary" />
-                      <span className="font-semibold">This letter is preserved forever</span>
-                    </div>
                   </div>
                 )}
               </div>
