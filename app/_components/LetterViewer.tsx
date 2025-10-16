@@ -305,7 +305,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
                 <div className="mt-12 text-center">
                   {timeLeft.expired ? (
-                    <p className="text-red-500 text-base">This letter has expired and can no longer be downloaded.</p>
+                    <p className="text-red-500 text-base">This letter has expired.</p>
                   ) : (
                     <p className="text-sm text-secondary">
                       This letter expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
