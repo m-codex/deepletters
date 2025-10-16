@@ -9,7 +9,8 @@ type DecryptedLetter = {
   content: string;
   senderName: string;
   audioDataUrl: string | null;
-  musicId: string | null;
+  musicUrl: string | null;
+  musicVolume: number;
 };
 
 export default function LetterViewer({ shareCode }: { shareCode: string }) {
@@ -88,6 +89,12 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   }, [shareCode, loadLetter]);
 
   useEffect(() => {
+    if (musicAudioRef.current && typeof decryptedLetter?.musicVolume === 'number') {
+      musicAudioRef.current.volume = decryptedLetter.musicVolume;
+    }
+  }, [decryptedLetter]);
+
+  useEffect(() => {
     if (isOpened) {
       setIsPlaying(true);
       voiceAudioRef.current?.play();
@@ -160,7 +167,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
         {!isOpened && (
           <>
-            {(decryptedLetter.audioDataUrl || decryptedLetter.musicId) ? (
+            {(decryptedLetter.audioDataUrl || decryptedLetter.musicUrl) ? (
               <p className="text-secondary mb-8">
                 This letter contains audio. Headphones or speakers are recommended.
               </p>
@@ -188,17 +195,17 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                   onEnded={handleAudioEnd}
                 />
               )}
-              {decryptedLetter.musicId && (
+              {decryptedLetter.musicUrl && (
                 <audio
                   ref={musicAudioRef}
-                  src={`/music/${decryptedLetter.musicId}.mp3`}
+                  src={decryptedLetter.musicUrl}
                   loop
                 />
               )}
               <div className={`rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left ${
                 letterMetadata.theme === 'light' ? 'bg-secondary-bg' : 'bg-gray-800'
               }`}>
-                {(decryptedLetter.audioDataUrl || decryptedLetter.musicId) && (
+                {(decryptedLetter.audioDataUrl || decryptedLetter.musicUrl) && (
                   <button
                     onClick={toggleAudio}
                     className="float-right w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"

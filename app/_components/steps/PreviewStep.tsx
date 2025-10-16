@@ -119,6 +119,8 @@ export default function PreviewStep() {
         management_token: managementToken,
         storage_path: filePath,
         theme: letterData.theme,
+        music_url: letterData.musicUrl,
+        music_volume: letterData.musicVolume,
         // content and audio_url are no longer stored directly
       };
 
