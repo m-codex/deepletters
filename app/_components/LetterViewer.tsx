@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, Letter } from '@/_lib/supabase';
 import { Mail, Volume2, VolumeX, Download } from 'lucide-react';
 import { importKeyFromString, decryptData } from '@/_lib/crypto';
+import LetterDisplay from '@/_components/LetterDisplay';
 
 type DecryptedLetter = {
   content: string;
