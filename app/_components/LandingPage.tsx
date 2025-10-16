@@ -49,17 +49,25 @@ export default function LandingPage() {
             />
           </div>
 
-          <button
-            onClick={() => {
-              if (honeypot) {
-                return;
-              }
-              router.push('/create/write');
-            }}
-            className="px-8 py-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-          >
-            Create Your Letter
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => {
+                if (honeypot) {
+                  return;
+                }
+                router.push('/create/write');
+              }}
+              className="px-8 py-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              Create Your Letter
+            </button>
+            <a
+              href="/open"
+              className="px-8 py-4 bg-btn-secondary text-primary rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              Open Letter
+            </a>
+          </div>
           <p className="mt-6 text-sm text-secondary">
             Free to create • Available online for 7 days • Download and keep forever
           </p>
