@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef } from 'react';
-import { Upload, KeySquare } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Upload, Mail, Volume2, VolumeX } from 'lucide-react';
 import { importKeyFromString, decryptData } from '@/_lib/crypto';
-import LetterDisplay from '@/_components/LetterDisplay';
 
 type DecryptedLetter = {
   content: string;
@@ -16,10 +15,12 @@ type DecryptedLetter = {
 
 export default function OpenLetterPage() {
   const [encryptedFile, setEncryptedFile] = useState<File | null>(null);
-  const [decryptionKey, setDecryptionKey] = useState('');
   const [decryptedLetter, setDecryptedLetter] = useState<DecryptedLetter | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+  const musicAudioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,8 +37,8 @@ export default function OpenLetterPage() {
   };
 
   const handleDecrypt = useCallback(async () => {
-    if (!encryptedFile || !decryptionKey) {
-      setError('Please provide both the letter file and the decryption key.');
+    if (!encryptedFile) {
+      setError('Please provide the letter file.');
       return;
     }
 
@@ -46,29 +47,125 @@ export default function OpenLetterPage() {
     setDecryptedLetter(null);
 
     try {
-      const key = await importKeyFromString(decryptionKey);
       const fileBuffer = await encryptedFile.arrayBuffer();
-      const decryptedBuffer = await decryptData(key, fileBuffer);
+      const dataView = new DataView(fileBuffer);
+      const wrappedKeyLength = dataView.getUint32(0, true);
+      const wrappedKeyBuffer = fileBuffer.slice(4, 4 + wrappedKeyLength);
+      const encryptedData = fileBuffer.slice(4 + wrappedKeyLength);
+
+      const wrappedKeyString = Buffer.from(wrappedKeyBuffer).toString('base64');
+
+      const response = await fetch('/api/unwrap-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wrappedKey: wrappedKeyString }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to unwrap key.');
+      }
+
+      const { key: letterKeyString } = await response.json();
+      const letterKey = await importKeyFromString(letterKeyString);
+
+      const decryptedBuffer = await decryptData(letterKey, encryptedData);
       const decryptedJson = new TextDecoder().decode(decryptedBuffer);
       const letterContent: DecryptedLetter = JSON.parse(decryptedJson);
 
       setDecryptedLetter(letterContent);
     } catch (err) {
       console.error('Decryption failed:', err);
-      setError('Decryption failed. Please check the file and key and try again.');
+      setError('Decryption failed. The file may be corrupt or the application has been updated.');
     } finally {
       setLoading(false);
     }
-  }, [encryptedFile, decryptionKey]);
+  }, [encryptedFile]);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
+  const toggleAudio = () => {
+    if (isPlaying) {
+      voiceAudioRef.current?.pause();
+      musicAudioRef.current?.pause();
+    } else {
+      voiceAudioRef.current?.play();
+      musicAudioRef.current?.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleAudioEnd = () => {
+    setIsPlaying(false);
+    if (musicAudioRef.current) {
+      musicAudioRef.current.pause();
+      musicAudioRef.current.currentTime = 0;
+    }
+  };
+
+  useEffect(() => {
+    if (decryptedLetter) {
+      setIsPlaying(true);
+    }
+  }, [decryptedLetter]);
+
   if (decryptedLetter) {
     return (
-      <div className="min-h-screen">
-        <LetterDisplay letter={decryptedLetter} />
+      <div className={`flex justify-center text-center p-10 ${
+        decryptedLetter.theme === 'light' ? 'bg-primary-bg' : 'bg-primary'
+      }`}>
+        <div className="animate-fadeIn max-w-4xl w-full">
+          <div className="w-24 h-24 bg-secondary-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <Mail className="w-12 h-12 text-btn-primary" />
+          </div>
+          <h1 className="text-4xl font-bold text-primary mb-6 font-serif">
+            A Letter from {decryptedLetter.senderName || 'A secret admirer'}
+          </h1>
+
+          <div className="transition-all duration-1000 animate-fadeIn">
+            {decryptedLetter.audioDataUrl && (
+              <audio
+                ref={voiceAudioRef}
+                src={decryptedLetter.audioDataUrl}
+                onEnded={handleAudioEnd}
+                autoPlay
+              />
+            )}
+            {decryptedLetter.musicUrl && (
+              <audio
+                ref={musicAudioRef}
+                src={decryptedLetter.musicUrl}
+                loop
+                autoPlay
+              />
+            )}
+            <div className={`rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left ${
+              decryptedLetter.theme === 'light' ? 'bg-secondary-bg' : 'bg-gray-800'
+            }`}>
+              {(decryptedLetter.audioDataUrl || decryptedLetter.musicUrl) && (
+                <button
+                  onClick={toggleAudio}
+                  className="float-right w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+                >
+                  {isPlaying ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                </button>
+              )}
+              <div className={`prose prose-lg max-w-none mb-8 animate-fadeInUp ${
+                decryptedLetter.theme === 'light' ? 'text-primary' : 'text-primary-bg'
+              }`}>
+                <p className="whitespace-pre-wrap leading-relaxed text-lg font-serif">
+                  {decryptedLetter.content}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-sm opacity-75 text-secondary">
+              Opened from a downloaded file on Deepletter.org
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -97,24 +194,11 @@ export default function OpenLetterPage() {
             />
           </div>
 
-          <div className="mb-6">
-            <div className="relative">
-              <KeySquare className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary" />
-              <input
-                type="text"
-                value={decryptionKey}
-                onChange={(e) => setDecryptionKey(e.target.value)}
-                placeholder="Enter decryption key"
-                className="w-full pl-12 pr-4 py-4 bg-primary-bg border border-secondary-bg rounded-md text-primary placeholder-secondary focus:ring-2 focus:ring-btn-primary focus:outline-none"
-              />
-            </div>
-          </div>
-
           {error && <p className="text-red-400 mb-4">{error}</p>}
 
           <button
             onClick={handleDecrypt}
-            disabled={!encryptedFile || !decryptionKey || loading}
+            disabled={!encryptedFile || loading}
             className="w-full px-8 py-4 bg-btn-secondary text-primary rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             {loading ? 'Decrypting...' : 'Open Letter'}

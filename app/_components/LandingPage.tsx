@@ -61,17 +61,12 @@ export default function LandingPage() {
             >
               Create Your Letter
             </button>
-            <button
-              onClick={() => {
-                if (honeypot) {
-                  return;
-                }
-                router.push('/open');
-              }}
+            <a
+              href="/open"
               className="px-8 py-4 bg-btn-secondary text-primary rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               Open Letter
-            </button>
+            </a>
           </div>
           <p className="mt-6 text-sm text-secondary">
             Free to create • Available online for 7 days • Download and keep forever

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, Letter } from '@/_lib/supabase';
 import { Mail, Volume2, VolumeX, Download } from 'lucide-react';
 import { importKeyFromString, decryptData } from '@/_lib/crypto';
-import LetterDisplay from '@/_components/LetterDisplay';
 
 type DecryptedLetter = {
   content: string;
@@ -160,18 +159,41 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     setDownloadMessage('');
 
     try {
+      const letterKeyString = window.location.hash.substring(1);
+
+      const response = await fetch('/api/wrap-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: letterKeyString }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to wrap key.');
+      }
+
+      const { wrappedKey: wrappedKeyString } = await response.json();
+      const wrappedKeyBuffer = Buffer.from(wrappedKeyString, 'base64');
+
       const { data: fileData, error: fileError } = await supabase.storage
         .from('encrypted-letters')
         .download(letterMetadata.storage_path);
 
       if (fileError) throw fileError;
 
+      const encryptedLetterBuffer = await fileData.arrayBuffer();
+
+      const combinedBuffer = new ArrayBuffer(4 + wrappedKeyBuffer.byteLength + encryptedLetterBuffer.byteLength);
+      const view = new DataView(combinedBuffer);
+      view.setUint32(0, wrappedKeyBuffer.byteLength, true);
+      new Uint8Array(combinedBuffer, 4).set(new Uint8Array(wrappedKeyBuffer));
+      new Uint8Array(combinedBuffer, 4 + wrappedKeyBuffer.byteLength).set(new Uint8Array(encryptedLetterBuffer));
+
       const senderName = decryptedLetter.senderName || 'Anonymous';
       const date = new Date(letterMetadata.created_at);
       const timestamp = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}${date.getSeconds().toString().padStart(2, '0')}`;
       const filename = `${timestamp}_A_Letter_from_${senderName}.dpl`;
 
-      const blob = new Blob([await fileData.arrayBuffer()], { type: 'application/octet-stream' });
+      const blob = new Blob([combinedBuffer], { type: 'application/octet-stream' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = filename;
@@ -245,40 +267,70 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
           </>
         )}
 
-        {isOpened && decryptedLetter && (
+        {isOpened && (
           <>
-            <LetterDisplay
-              letter={{
-                ...decryptedLetter,
-                theme: letterMetadata.theme as 'light' | 'dark',
-              }}
-            />
-            <div className="mt-12 text-center">
-              {timeLeft.expired ? (
-                <>
-                  <p className="text-red-500 text-base">This letter has expired.</p>
+            <div className="transition-all duration-1000 animate-fadeIn">
+              {decryptedLetter.audioDataUrl && (
+                <audio
+                  ref={voiceAudioRef}
+                  src={decryptedLetter.audioDataUrl}
+                  onEnded={handleAudioEnd}
+                />
+              )}
+              {decryptedLetter.musicUrl && (
+                <audio
+                  ref={musicAudioRef}
+                  src={decryptedLetter.musicUrl}
+                  loop
+                />
+              )}
+              <div className={`rounded-lg shadow-2xl p-8 md:p-16 animate-slideUp text-left ${
+                letterMetadata.theme === 'light' ? 'bg-secondary-bg' : 'bg-gray-800'
+              }`}>
+                {(decryptedLetter.audioDataUrl || decryptedLetter.musicUrl) && (
                   <button
-                    onClick={handleDownload}
-                    disabled={downloading}
-                    className="text-sm text-btn-primary hover:underline mt-2"
+                    onClick={toggleAudio}
+                    className="float-right w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
                   >
-                    <Download className="w-4 h-4 inline-block mr-1" />
-                    {downloading ? 'Downloading...' : 'Download to keep forever'}
+                    {isPlaying ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                   </button>
-                </>
-              ) : (
-                <p className="text-sm text-secondary">
-                  This letter expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-                </p>
-              )}
-              {downloadMessage && (
-                <p className="text-sm text-secondary mt-2">{downloadMessage}</p>
-              )}
-               <div className="text-center mt-8">
-          <p className="text-sm opacity-75 text-secondary">
-            Created with <span className="text-btn-primary">♥</span> on Deepletter.org
-          </p>
-        </div>
+                )}
+                <div className={`prose prose-lg max-w-none mb-8 animate-fadeInUp ${
+                  letterMetadata.theme === 'light' ? 'text-primary' : 'text-primary-bg'
+                }`}>
+                  <p className="whitespace-pre-wrap leading-relaxed text-lg font-serif">
+                    {decryptedLetter.content}
+                  </p>
+                </div>
+
+                <div className="mt-12 text-center">
+                   {timeLeft.expired ? (
+                    <>
+                      <p className="text-red-500 text-base">This letter has expired.</p>
+                      <button
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="text-sm text-btn-primary hover:underline mt-2"
+                      >
+                        <Download className="w-4 h-4 inline-block mr-1" />
+                        {downloading ? 'Downloading...' : 'Download to keep forever'}
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-sm text-secondary">
+                      This letter expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+                    </p>
+                  )}
+                  {downloadMessage && (
+                    <p className="text-sm text-secondary mt-2">{downloadMessage}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="text-center mt-8">
+              <p className="text-sm opacity-75 text-secondary">
+                Created with <span className="text-btn-primary">♥</span> on Deepletter.org
+              </p>
             </div>
           </>
         )}
