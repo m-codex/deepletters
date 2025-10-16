@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { importKeyFromString, encryptData } from '@/_lib/crypto';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { key: letterKeyString } = await request.json();

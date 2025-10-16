@@ -304,23 +304,21 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                 </div>
 
                 <div className="mt-12 text-center">
-                   {timeLeft.expired ? (
-                    <>
-                      <p className="text-red-500 text-base">This letter has expired.</p>
-                      <button
-                        onClick={handleDownload}
-                        disabled={downloading}
-                        className="text-sm text-btn-primary hover:underline mt-2"
-                      >
-                        <Download className="w-4 h-4 inline-block mr-1" />
-                        {downloading ? 'Downloading...' : 'Download to keep forever'}
-                      </button>
-                    </>
+                  {timeLeft.expired ? (
+                    <p className="text-red-500 text-base">This letter has expired and can no longer be downloaded.</p>
                   ) : (
                     <p className="text-sm text-secondary">
                       This letter expires in: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
                     </p>
                   )}
+                  <button
+                    onClick={handleDownload}
+                    disabled={downloading || timeLeft.expired}
+                    className="text-sm text-btn-primary hover:underline disabled:text-gray-500 disabled:cursor-not-allowed mt-2"
+                  >
+                    <Download className="w-4 h-4 inline-block mr-1" />
+                    {downloading ? 'Downloading...' : 'Download to keep forever'}
+                  </button>
                   {downloadMessage && (
                     <p className="text-sm text-secondary mt-2">{downloadMessage}</p>
                   )}
