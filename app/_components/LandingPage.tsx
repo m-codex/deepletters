@@ -59,7 +59,7 @@ export default function LandingPage() {
               }}
               className="px-8 py-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              Create Your Letter
+              Create Letter
             </button>
             <a
               href="/open"
