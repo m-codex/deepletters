@@ -195,7 +195,7 @@ export default function PreviewStep() {
                 step="0.05"
                 value={letterData.musicVolume}
                 onChange={handleVolumeChange}
-                className="w-32"
+                className="w-32 accent-btn-primary"
               />
             </div>
           )}
