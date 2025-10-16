@@ -7,44 +7,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type Letter = {
   id:string;
-  content: string;
   theme: 'light' | 'dark';
   music_url: string | null;
   music_volume: number | null;
-  audio_url: string | null;
   share_code: string;
   management_token: string | null;
   sender_name: string | null;
-  is_permanent: boolean;
-  upgraded_by: string | null;
   created_at: string;
   expires_at: string | null;
   view_count: number;
   finalized_at: string | null;
-  is_paid: boolean;
   storage_path: string | null;
-};
-
-export type Theme = {
-  id: string;
-  name: string;
-  description: string;
-  preview_image: string;
-  styles: {
-    background: string;
-    text: string;
-    accent: string;
-    font: string;
-    animation: string;
-  };
-  is_active: boolean;
-};
-
-export type MusicTrack = {
-  id: string;
-  name: string;
-  artist: string;
-  url: string;
-  duration: number;
-  is_active: boolean;
 };

@@ -165,13 +165,6 @@ export default function PreviewStep() {
           PREVIEW MODE
         </div>
 
-        {letterData.audioUrl && (
-          <audio
-            ref={voiceAudioRef}
-            src={letterData.audioUrl}
-            onEnded={handleOnEnded}
-          />
-        )}
         {letterData.musicUrl && (
           <audio
             ref={musicAudioRef}
@@ -181,7 +174,7 @@ export default function PreviewStep() {
         )}
 
         <div className="flex items-center gap-4 mb-6">
-          {(letterData.audioUrl || letterData.musicUrl) && (
+          {(letterData.musicUrl) && (
             <button
               onClick={togglePlayPause}
               className="flex items-center gap-2 bg-btn-primary text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transition-all"

@@ -8,7 +8,6 @@ export type LetterData = {
   content: string;
   senderName: string;
   audioBlob: Blob | null;
-  audioUrl: string | null;
   musicUrl: string | null;
   musicVolume: number;
   finalized_at: string | null;
@@ -29,7 +28,6 @@ const initialLetterData: LetterData = {
   content: '',
   senderName: '',
   audioBlob: null,
-  audioUrl: null,
   musicUrl: null,
   musicVolume: 0.5,
   finalized_at: null,

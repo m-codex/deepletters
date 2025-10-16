@@ -12,7 +12,7 @@ export default function VoiceStep() {
   const { letterData, updateLetterData } = useLetterData();
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(letterData.audioUrl);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -22,15 +22,12 @@ export default function VoiceStep() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    setAudioUrl(letterData.audioUrl);
-  }, [letterData.audioUrl]);
 
   const startRecording = async () => {
     try {
       setUploadError(null);
       setAudioUrl(null);
-      updateLetterData({ audioUrl: null, audioBlob: null });
+      updateLetterData({ audioBlob: null });
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -52,7 +49,7 @@ export default function VoiceStep() {
         const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const localUrl = URL.createObjectURL(blob);
         setAudioUrl(localUrl);
-        updateLetterData({ audioBlob: blob, audioUrl: localUrl });
+        updateLetterData({ audioBlob: blob });
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -92,7 +89,7 @@ export default function VoiceStep() {
 
   const deleteRecording = () => {
     setAudioUrl(null);
-    updateLetterData({ audioBlob: null, audioUrl: null });
+    updateLetterData({ audioBlob: null });
     setIsPlaying(false);
     setDuration(0);
   };
@@ -109,7 +106,7 @@ export default function VoiceStep() {
   };
 
   const handleSkip = () => {
-    updateLetterData({ audioBlob: null, audioUrl: null });
+    updateLetterData({ audioBlob: null });
     router.push('/create/music');
   };
 

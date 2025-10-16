@@ -60,7 +60,6 @@ export default function WriteStep() {
         .insert({
           share_code: newShareCode,
           sender_name: senderName, // Save sender name for identification
-          content: content,
           theme: letterData.theme,
         })
         .select()
@@ -111,7 +110,6 @@ export default function WriteStep() {
         content: '',
         senderName: '',
         audioBlob: null,
-        audioUrl: null,
         musicUrl: null,
         musicVolume: 0.5,
         finalized_at: null,
