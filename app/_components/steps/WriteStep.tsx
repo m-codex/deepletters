@@ -39,7 +39,7 @@ export default function WriteStep() {
     // Generate a temporary ID for anonymous users to link their letter after registration
     const tempId = localStorage.getItem('temp_id');
     if (!tempId) {
-      const newTempId = shortUUID.generate();
+      const newTempId = crypto.randomUUID();
       localStorage.setItem('temp_id', newTempId);
       updateLetterData({ temp_id: newTempId });
     } else {
