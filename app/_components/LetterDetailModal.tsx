@@ -4,15 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/_lib/supabase';
 import { X, Save } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
-
-// Assuming LetterWithSubject is defined in Dashboard.tsx and passed as a prop
-interface LetterWithSubject {
-  id: string;
-  content: string;
-  sender_name: string;
-  user_subject?: string;
-  // Add other letter properties as needed
-}
+import { LetterWithSubject } from '@/_lib/supabase';
 
 interface LetterDetailModalProps {
   isOpen: boolean;

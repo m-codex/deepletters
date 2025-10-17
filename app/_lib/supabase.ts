@@ -18,3 +18,9 @@ export type Letter = {
   view_count: number;
   finalized_at: string | null;
 };
+
+export interface LetterWithSubject extends Letter {
+  user_subject?: string;
+  recipient_name?: string;
+  subject?: string;
+}
