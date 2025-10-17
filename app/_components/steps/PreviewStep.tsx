@@ -7,7 +7,6 @@ import { MailCheck, Play, Pause } from "lucide-react";
 import StepWrapper from "./StepWrapper";
 import { supabase, Letter } from "@/_lib/supabase";
 import shortUUID from "short-uuid";
-import { setTempId } from "@/_hooks/useLetterSaver";
 
 export default function PreviewStep() {
   const router = useRouter();
@@ -73,7 +72,7 @@ export default function PreviewStep() {
 
       if (error) throw error;
       if (data.temp_id) {
-        setTempId(data.temp_id);
+        localStorage.setItem("tempId", data.temp_id);
       }
 
       localStorage.removeItem("unfinalizedShareCode");
