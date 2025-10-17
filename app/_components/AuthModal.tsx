@@ -28,12 +28,14 @@ export default function AuthModal({
     setMessage('');
     setLoading(true);
 
+    const redirectTo = process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback`
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // The redirect URL is dynamically set to the current window's origin.
-        // This ensures the user is redirected back to the correct deployment (production or preview).
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: redirectTo,
       },
     });
 
