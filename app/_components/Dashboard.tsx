@@ -13,6 +13,7 @@ type View = 'sent' | 'received' | string; // string for folder IDs
 interface LetterWithSubject extends Letter {
   user_subject?: string;
   recipient_name?: string;
+  subject?: string;
 }
 
 export default function Dashboard() {
@@ -68,7 +69,7 @@ export default function Dashboard() {
         console.error('Error linking letter:', err);
       }
     }
-  }, [supabase]);
+  }, [supabase, fetchData, view]);
 
   const fetchData = useCallback(async (user: User, currentView: View) => {
     setLoading(true);
