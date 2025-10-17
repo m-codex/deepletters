@@ -63,10 +63,9 @@ export default function MusicStep() {
         const trackList: MusicTrack[] = tracks
           .filter(track => track.name !== '.emptyFolderPlaceholder')
           .map(track => {
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-            const encodedFolderPath = encodeURIComponent(folder.name);
-            const encodedTrackPath = encodeURIComponent(track.name);
-            const publicUrl = `${supabaseUrl}/storage/v1/object/public/music-tracks/${encodedFolderPath}/${encodedTrackPath}`;
+            const { data: { publicUrl } } = supabase.storage
+              .from('music-tracks')
+              .getPublicUrl(`${folder.name}/${track.name}`);
 
             return {
               name: track.name.replace(/\.(mp3|wav|ogg)$/, ''),

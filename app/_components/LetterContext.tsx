@@ -7,7 +7,6 @@ export type LetterData = {
   shareCode: string | null;
   content: string;
   senderName: string;
-  audioBlob: Blob | null;
   musicUrl: string | null;
   musicVolume: number;
   finalized_at: string | null;
@@ -27,7 +26,6 @@ const initialLetterData: LetterData = {
   shareCode: null,
   content: '',
   senderName: '',
-  audioBlob: null,
   musicUrl: null,
   musicVolume: 0.5,
   finalized_at: null,
@@ -48,7 +46,7 @@ export const LetterProvider = ({ children, shareCode }: { children: ReactNode, s
           localStorage.removeItem('letterData');
           return initialLetterData;
         }
-        return { ...parsed, audioBlob: null };
+        return parsed;
       }
     } catch (error) {
       console.error('Error reading from localStorage', error);
@@ -60,8 +58,7 @@ export const LetterProvider = ({ children, shareCode }: { children: ReactNode, s
 
   useEffect(() => {
     try {
-      const { audioBlob, ...persistableData } = letterData;
-      localStorage.setItem('letterData', JSON.stringify(persistableData));
+      localStorage.setItem('letterData', JSON.stringify(letterData));
     } catch (error) {
       console.error('Error writing to localStorage', error);
     }
