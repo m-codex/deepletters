@@ -53,24 +53,6 @@ export default function Dashboard() {
     }
   };
 
-  const linkAnonymousLetter = useCallback(async (user: User) => {
-    const tempId = localStorage.getItem('temp_id');
-    if (tempId) {
-      try {
-        const { error } = await supabase
-          .from('letters')
-          .update({ sender_id: user.id })
-          .eq('temp_id', tempId);
-        if (error) throw error;
-        localStorage.removeItem('temp_id');
-        // Refresh data after linking
-        fetchData(user, view);
-      } catch (err) {
-        console.error('Error linking letter:', err);
-      }
-    }
-  }, [supabase, fetchData, view]);
-
   const fetchData = useCallback(async (user: User, currentView: View) => {
     setLoading(true);
     try {
@@ -108,6 +90,24 @@ export default function Dashboard() {
       setLoading(false);
     }
   }, [supabase]);
+
+  const linkAnonymousLetter = useCallback(async (user: User) => {
+    const tempId = localStorage.getItem('temp_id');
+    if (tempId) {
+      try {
+        const { error } = await supabase
+          .from('letters')
+          .update({ sender_id: user.id })
+          .eq('temp_id', tempId);
+        if (error) throw error;
+        localStorage.removeItem('temp_id');
+        // Refresh data after linking
+        fetchData(user, view);
+      } catch (err) {
+        console.error('Error linking letter:', err);
+      }
+    }
+  }, [supabase, fetchData, view]);
 
   useEffect(() => {
     const initDashboard = async () => {
