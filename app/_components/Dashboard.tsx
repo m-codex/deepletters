@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
 import { Plus, Send, Inbox, Folder, LogOut, Loader2, Settings, Trash2, Edit } from 'lucide-react';
 import { Letter, LetterWithSubject } from '@/_lib/supabase';
@@ -11,7 +11,10 @@ import LetterDetailModal from './LetterDetailModal';
 type View = 'sent' | 'received' | string; // string for folder IDs
 
 export default function Dashboard() {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, Letter } from '@/_lib/supabase';
 import { Mail, Volume2, VolumeX, Save } from 'lucide-react';
 import AuthModal from './AuthModal';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
 
 export default function LetterViewer({ shareCode }: { shareCode: string }) {
@@ -12,7 +12,10 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isSaved, setIsSaved] = useState(false);
-  const supabaseClient = createClientComponentClient();
+  const supabaseClient = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
