@@ -35,6 +35,18 @@ export default function WriteStep() {
     }
   }, [letterData]);
 
+  useEffect(() => {
+    // Generate a temporary ID for anonymous users to link their letter after registration
+    const tempId = localStorage.getItem('temp_id');
+    if (!tempId) {
+      const newTempId = crypto.randomUUID();
+      localStorage.setItem('temp_id', newTempId);
+      updateLetterData({ temp_id: newTempId });
+    } else {
+      updateLetterData({ temp_id: tempId });
+    }
+  }, [updateLetterData]);
+
   const handleNameSubmit = () => {
     if (senderName.trim()) {
       localStorage.setItem('senderName', senderName);
@@ -61,6 +73,7 @@ export default function WriteStep() {
           share_code: newShareCode,
           sender_name: senderName, // Save sender name for identification
           theme: letterData.theme,
+          temp_id: letterData.temp_id,
         })
         .select()
         .single();

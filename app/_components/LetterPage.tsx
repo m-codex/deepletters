@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Share2, Copy, Check, Loader2, Eye, Mail } from 'lucide-react';
+import { Share2, Copy, Check, Loader2, Eye, Mail, Save } from 'lucide-react';
 import { supabase, Letter } from '@/_lib/supabase';
+import AuthModal from './AuthModal';
 
 export default function LetterPage({
   managementToken,
 }: {
   managementToken: string;
 }) {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const router = useRouter();
   const [letter, setLetter] = useState<Letter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -125,15 +127,36 @@ export default function LetterPage({
         </div>
       </div>
 
+      <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
+        <h3 className="text-2xl font-bold text-primary mb-3">Save Your Letters</h3>
+        <p className="text-secondary mb-6">
+          Create a free account to save this letter and manage all your sent and received letters in one place.
+        </p>
+        <button
+          onClick={() => setIsAuthModalOpen(true)}
+          className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+        >
+          <Save className="w-5 h-5" />
+          Create Free Account
+        </button>
+      </div>
+
       <button
         onClick={() => {
           localStorage.removeItem('lastFinalizedShareCode');
           router.push('/');
         }}
-        className="w-full py-4 bg-btn-secondary text-primary-bg rounded-md font-semibold text-lg  transition-colors"
+        className="w-full mt-8 py-4 bg-btn-secondary text-primary-bg rounded-md font-semibold text-lg  transition-colors"
       >
         Create Another Letter
       </button>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        title="Save Your Letter"
+        description="Sign up for a free account to keep this letter and manage all your future correspondence."
+      />
     </div>
   );
 }
