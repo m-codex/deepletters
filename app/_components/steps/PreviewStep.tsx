@@ -61,19 +61,26 @@ export default function PreviewStep() {
         music_volume: letterData.musicVolume,
       };
 
-      const { error: updateError } = await supabase
+      const { data: updatedLetter, error: updateError } = await supabase
         .from('letters')
         .update(updateData)
-        .eq('share_code', letterData.shareCode);
+        .eq('share_code', letterData.shareCode)
+        .select()
+        .single();
 
       if (updateError) throw updateError;
 
       // 2. Redirect the user
-      if (letterData.shareCode) {
+      if (updatedLetter?.management_token) {
         localStorage.removeItem('unfinalizedShareCode');
         localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
+        router.replace(`/manage/${updatedLetter.management_token}`);
+      } else {
+          // Fallback in case the token isn't returned, though it should be.
+          console.error("Could not retrieve management token after finalization.");
+          alert("Your letter has been finalized, but there was an issue redirecting you. Please check your dashboard.");
+          router.replace('/');
       }
-      router.replace(`/letter/${letterData.shareCode}`);
 
     } catch (error) {
       console.error('Error finalizing letter:', error);

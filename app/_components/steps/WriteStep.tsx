@@ -86,9 +86,7 @@ export default function WriteStep() {
 
   const handleNext = async () => {
     await handleSave();
-    // No need to check for success, as it doesn't block navigation anymore
-    const navigateTo = letterData.shareCode ? `/edit/${letterData.shareCode}/music` : `/create/music`;
-    router.push(navigateTo);
+    router.push('/create/music');
   };
 
   const handleDiscard = async () => {

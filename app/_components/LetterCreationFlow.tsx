@@ -25,7 +25,7 @@ function LetterCreationLayout({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   const steps = ['/write', '/music', '/preview'];
-  const currentPath = pathname.replace(`/edit/${letterData.shareCode}`, '').replace('/create', '');
+  const currentPath = pathname.replace('/create', '');
   const stepIndex = steps.indexOf(currentPath);
   const step = stepIndex + 1;
 

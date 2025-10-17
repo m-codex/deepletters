@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, Letter } from '@/_lib/supabase';
 import { Mail, Volume2, VolumeX } from 'lucide-react';
 
@@ -12,12 +12,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   const [isOpened, setIsOpened] = useState(false);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    loadLetter();
-  }, [shareCode]);
-
-  const loadLetter = async () => {
+  const loadLetter = useCallback(async () => {
     try {
       const { data, error: letterError } = await supabase
         .from('letters')
@@ -44,7 +39,12 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [shareCode]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadLetter();
+  }, [loadLetter]);
 
   useEffect(() => {
     if (musicAudioRef.current && typeof letter?.music_volume === 'number') {
