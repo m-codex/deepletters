@@ -83,51 +83,45 @@ export default function LetterPage({
           You can now share the link with the recipient.
         </p>
         <div className="flex flex-col gap-3 my-8">
+          <button
+            onClick={async () => {
+              if (navigator.share) {
+                try {
+                  await navigator.share({
+                    title: 'A letter for you',
+                    text: 'I wrote a letter for you. I hope you like it.',
+                    url: shareUrl,
+                  });
+                } catch (error) {
+                  console.error('Error sharing:', error);
+                }
+              } else {
+                copyToClipboard();
+              }
+            }}
+            className="flex-1 py-3 px-4 bg-btn-primary text-white rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+          >
+            {copied ? (
+              <>
+                <Check className="w-5 h-5" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Share2 className="w-5 h-5" />
+                Share Letter
+              </>
+            )}
+          </button>
           <a
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-3 px-4 bg-btn-primary text-white rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+            className="flex-1 py-3 px-4 bg-btn-secondary text-primary-bg rounded-md font-semibold text-lg flex items-center justify-center gap-2 transition-colors"
           >
             <Eye className="w-5 h-5" />
             View Letter
           </a>
-        </div>
-      </div>
-
-      <div className="bg-secondary-bg shadow-xl p-8 md:p-12 mb-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-bg rounded-full mb-4">
-            <Share2 className="w-8 h-8 text-btn-primary" />
-          </div>
-          <h2 className="text-4xl text-primary mb-4">Send Your Letter</h2>
-          <label className="block text-left text-sm text-secondary mb-3">
-            Share Link
-          </label>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              value={shareUrl}
-              readOnly
-              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 font-mono text-sm"
-            />
-            <button
-              onClick={copyToClipboard}
-              className="px-6 py-3 bg-btn-primary text-white rounded-md font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-5 h-5" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-5 h-5" />
-                  Copy
-                </>
-              )}
-            </button>
-          </div>
         </div>
       </div>
 
