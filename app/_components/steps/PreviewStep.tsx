@@ -6,6 +6,7 @@ import { useLetterData } from '../useLetterData';
 import { MailCheck, Play, Pause } from 'lucide-react';
 import StepWrapper from './StepWrapper';
 import { supabase, Letter } from '@/_lib/supabase';
+import shortUUID from 'short-uuid';
 
 export default function PreviewStep() {
   const router = useRouter();
@@ -52,35 +53,28 @@ export default function PreviewStep() {
     try {
       // 1. Update the database record
       const finalizedAt = new Date().toISOString();
+      const managementToken = shortUUID.generate();
 
       const updateData: Partial<Letter> = {
         content: letterData.content,
         finalized_at: finalizedAt,
+        management_token: managementToken,
         theme: letterData.theme,
         music_url: letterData.musicUrl,
         music_volume: letterData.musicVolume,
       };
 
-      const { data: updatedLetter, error: updateError } = await supabase
+      const { error } = await supabase
         .from('letters')
         .update(updateData)
-        .eq('share_code', letterData.shareCode)
-        .select()
-        .single();
+        .eq('share_code', letterData.shareCode);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
       // 2. Redirect the user
-      if (updatedLetter?.management_token) {
-        localStorage.removeItem('unfinalizedShareCode');
-        localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
-        router.replace(`/manage/${updatedLetter.management_token}`);
-      } else {
-          // Fallback in case the token isn't returned, though it should be.
-          console.error("Could not retrieve management token after finalization.");
-          alert("Your letter has been finalized, but there was an issue redirecting you. Please check your dashboard.");
-          router.replace('/');
-      }
+      localStorage.removeItem('unfinalizedShareCode');
+      localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
+      router.replace(`/manage/${managementToken}`);
 
     } catch (error) {
       console.error('Error finalizing letter:', error);
