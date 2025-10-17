@@ -101,8 +101,17 @@ export default function LetterPage({
             }}
             className="flex-1 py-3 px-4 bg-btn-primary text-white rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
           >
-            <Share2 className="w-5 h-5" />
-            Share Letter
+            {copied ? (
+              <>
+                <Check className="w-5 h-5" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Share2 className="w-5 h-5" />
+                Share Letter
+              </>
+            )}
           </button>
           <a
             href={shareUrl}
