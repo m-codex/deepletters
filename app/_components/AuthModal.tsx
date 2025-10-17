@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
-import { supabase } from '@/_lib/supabase';
-import { X } from 'lucide-react';
+import { useState } from "react";
+import { supabase } from "@/_lib/supabase";
+import { X } from "lucide-react";
+import { useAuthRedirect } from "@/_hooks/useAuthRedirect";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,22 +16,24 @@ export default function AuthModal({
   isOpen,
   onClose,
   title = "Sign In / Sign Up",
-  description = "Enter your email to receive a magic link to access your dashboard."
+  description = "Enter your email to receive a magic link to access your dashboard.",
 }: AuthModalProps) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const redirectTo = useAuthRedirect();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
-    setLoading(true);
+    if (!redirectTo) {
+      setError("Could not determine redirect URL.");
+      return;
+    }
 
-    const redirectTo = process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback`
-      : `${window.location.origin}/auth/callback`;
+    setError("");
+    setMessage("");
+    setLoading(true);
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -42,7 +45,7 @@ export default function AuthModal({
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Check your email for the magic link!');
+      setMessage("Check your email for the magic link!");
     }
     setLoading(false);
   };
