@@ -1,125 +1,120 @@
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
-import type { User } from '@supabase/supabase-js';
-import { Plus, Send, Inbox, Folder, LogOut, Loader2, Settings, Trash2, Edit } from 'lucide-react';
-import { Letter, LetterWithSubject } from '@/_lib/supabase';
-import LetterDetailModal from './LetterDetailModal';
-
-type View = 'sent' | 'received' | string; // string for folder IDs
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
+import {
+  Plus,
+  Send,
+  Inbox,
+  Folder,
+  LogOut,
+  Loader2,
+  Settings,
+  Trash2,
+  Edit,
+} from "lucide-react";
+import { Letter, LetterWithSubject } from "@/_lib/supabase";
+import LetterDetailModal from "./LetterDetailModal";
+type View = "sent" | "received" | string;
 
 export default function Dashboard() {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [letters, setLetters] = useState<LetterWithSubject[]>([]);
-  const [folders, setFolders] = useState<{ id: string, name: string }[]>([]);
-  const [view, setView] = useState<View>('sent');
+  const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const [view, setView] = useState<View>("sent");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedLetter, setSelectedLetter] = useState<LetterWithSubject | null>(null);
+  const [selectedLetter, setSelectedLetter] =
+    useState<LetterWithSubject | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push('/');
+    router.push("/");
   };
 
   const handleNewFolder = async () => {
-    const folderName = prompt('Enter a name for your new folder:');
+    const folderName = prompt("Enter a name for your new folder:");
     if (folderName && user) {
       try {
         const { data, error } = await supabase
-          .from('folders')
+          .from("folders")
           .insert({ name: folderName, user_id: user.id })
           .select()
           .single();
         if (error) throw error;
         if (data) {
-          setFolders(prev => [...prev, data]);
+          setFolders((prev) => [...prev, data]);
         }
       } catch (err) {
-        console.error('Error creating folder:', err);
-        alert('Could not create the folder. Please try again.');
+        console.error("Error creating folder:", err);
+        alert("Could not create the folder. Please try again.");
       }
     }
   };
 
-  const fetchData = useCallback(async (user: User, currentView: View) => {
-    setLoading(true);
-    try {
-      let lettersData: LetterWithSubject[] = [];
-      if (currentView === 'sent') {
-        const { data, error } = await supabase.rpc('get_letters_for_user', { p_user_id: user.id });
-        if (error) throw error;
-        lettersData = data || [];
-      } else if (currentView === 'received') {
-        const { data, error } = await supabase.rpc('get_saved_letters_for_user', { p_user_id: user.id });
-        if (error) throw error;
-        lettersData = data || [];
-      } else {
-        // Logic for folder view will be added later
-        // For now, it will just show letters not in any folder
-        // This part needs a more complex query, skipping for now.
-        lettersData = [];
-      }
-      setLetters(lettersData);
-
-      // Fetch folders
-      const { data: folderData, error: folderError } = await supabase
-        .from('folders')
-        .select('id, name')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
-
-      if (folderError) throw folderError;
-      setFolders(folderData || []);
-
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      // Handle error state in UI
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
-
-  const linkAnonymousLetter = useCallback(async (user: User) => {
-    const tempId = localStorage.getItem('temp_id');
-    if (tempId) {
+  const fetchData = useCallback(
+    async (user: User, currentView: View) => {
+      setLoading(true);
       try {
-        const { error } = await supabase
-          .from('letters')
-          .update({ sender_id: user.id })
-          .eq('temp_id', tempId);
-        if (error) throw error;
-        localStorage.removeItem('temp_id');
-        // Refresh data after linking
-        fetchData(user, view);
-      } catch (err) {
-        console.error('Error linking letter:', err);
+        let lettersData: LetterWithSubject[] = [];
+        if (currentView === "sent") {
+          const { data, error } = await supabase.rpc("get_letters_for_user", {
+            p_user_id: user.id,
+          });
+          if (error) throw error;
+          lettersData = data || [];
+        } else if (currentView === "received") {
+          const { data, error } = await supabase.rpc(
+            "get_saved_letters_for_user",
+            { p_user_id: user.id },
+          );
+          if (error) throw error;
+          lettersData = data || [];
+        } else {
+          lettersData = [];
+        }
+        setLetters(lettersData);
+
+        const { data: folderData, error: folderError } = await supabase
+          .from("folders")
+          .select("id, name")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (folderError) throw folderError;
+        setFolders(folderData || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [supabase, fetchData, view]);
+    },
+    [supabase],
+  );
 
   useEffect(() => {
     const initDashboard = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
-        router.push('/');
+        router.push("/");
         return;
       }
       setUser(session.user);
-      await linkAnonymousLetter(session.user);
       await fetchData(session.user, view);
       setLoading(false);
     };
     initDashboard();
-  }, [supabase, router, view, linkAnonymousLetter, fetchData]);
+  }, [supabase, router, view, fetchData]);
 
   if (loading && !user) {
     return (

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useLetterData } from '../useLetterData';
-import { MailCheck, Play, Pause } from 'lucide-react';
-import StepWrapper from './StepWrapper';
-import { supabase, Letter } from '@/_lib/supabase';
-import shortUUID from 'short-uuid';
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useLetterData } from "../useLetterData";
+import { MailCheck, Play, Pause } from "lucide-react";
+import StepWrapper from "./StepWrapper";
+import { supabase, Letter } from "@/_lib/supabase";
+import shortUUID from "short-uuid";
+import { setTempId } from "@/_hooks/useLetterSaver";
 
 export default function PreviewStep() {
   const router = useRouter();
@@ -40,18 +41,17 @@ export default function PreviewStep() {
   }, [letterData.musicVolume]);
 
   const handleEdit = () => {
-    router.push('/create/write');
+    router.push("/create/write");
   };
 
   const handleFinalize = async () => {
     if (!letterData.shareCode) {
-      alert('Cannot finalize without a share code.');
+      alert("Cannot finalize without a share code.");
       return;
     }
     setIsLoading(true);
 
     try {
-      // 1. Update the database record
       const finalizedAt = new Date().toISOString();
       const managementToken = shortUUID.generate();
 
@@ -64,21 +64,24 @@ export default function PreviewStep() {
         music_volume: letterData.musicVolume,
       };
 
-      const { error } = await supabase
-        .from('letters')
+      const { data, error } = await supabase
+        .from("letters")
         .update(updateData)
-        .eq('share_code', letterData.shareCode);
+        .eq("share_code", letterData.shareCode)
+        .select("temp_id")
+        .single();
 
       if (error) throw error;
+      if (data.temp_id) {
+        setTempId(data.temp_id);
+      }
 
-      // 2. Redirect the user
-      localStorage.removeItem('unfinalizedShareCode');
-      localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
+      localStorage.removeItem("unfinalizedShareCode");
+      localStorage.setItem("lastFinalizedShareCode", letterData.shareCode);
       router.replace(`/manage/${managementToken}`);
-
     } catch (error) {
-      console.error('Error finalizing letter:', error);
-      alert('Could not finalize your letter. Please try again.');
+      console.error("Error finalizing letter:", error);
+      alert("Could not finalize your letter. Please try again.");
       setIsLoading(false);
     }
   };
