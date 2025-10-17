@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Music, Mic, QrCode, Clock } from 'lucide-react';
+import { Mail, Music } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -29,7 +29,7 @@ export default function LandingPage() {
           
 
           <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto text-balance">
-            Combine your words, voice, and more to make your message memorable and impactful.
+            Combine your words and a beautiful soundtrack to make your message memorable.
           </p>
 
          <div style={{
@@ -59,57 +59,28 @@ export default function LandingPage() {
               }}
               className="px-8 py-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              Write Letter
+              Write Your Letter
             </button>
-            <a
-              href="/open"
-              className="px-8 py-4 bg-btn-secondary text-primary-bg rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-            >
-              Open Letter
-            </a>
           </div>
           <p className="mt-6 text-sm text-secondary">
-            Free to create • Available online for 7 days • Download and keep forever
+            Free to create • Shared via a private link
           </p>
         </section>
 
         <section className="container mx-auto px-6 py-20">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
             
-
             <FeatureCard
               icon={<Mail className="w-8 h-8" />}
               title="Write Your Heart"
-              description="Express your feelings with words that matter"
-            />
-            <FeatureCard
-              icon={<Mic className="w-8 h-8" />}
-              title="Add Your Voice"
-              description="Record yourself reading the letter (optional)"
+              description="Express your feelings with words that matter."
             />
             <FeatureCard
               icon={<Music className="w-8 h-8" />}
-              title="Add Background Soundtrack"
-              description="Add background music to give your message more depth (optional)"
-            />
-            <FeatureCard
-              icon={<QrCode className="w-8 h-8" />}
-              title="Share Instantly"
-              description="Share via link and download it"
+              title="Add a Soundtrack"
+              description="Add background music to give your message more depth."
             />
           </div>
-        </section>
-
-        <section className="container mx-auto px-6">
-          <div className="container mx-auto px-6 py-20 text-center bg-secondary-bg rounded-md">
-          <Clock className="w-16 h-16 mx-auto mb-6 text-btn-primary" />
-          <h2 className="text-4xl text-primary mb-4">Available Online for 7 Days</h2>
-           <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
-            Every letter is free and available online for 7 days.<br />
-            <strong>Want to keep it forever?</strong> Download your letter within that time to save it as an encrypted file.<br />
-            Open the file anytime using the letter viewer on deepletters.org.
-          </p>
-            </div>
         </section>
       </main>
 

@@ -7,11 +7,6 @@ import { MailCheck, Play, Pause } from 'lucide-react';
 import StepWrapper from './StepWrapper';
 import { supabase, Letter } from '@/_lib/supabase';
 import shortUUID from 'short-uuid';
-import {
-  generateEncryptionKey,
-  exportKeyToString,
-  encryptData,
-} from '@/_lib/crypto';
 
 export default function PreviewStep() {
   const router = useRouter();
@@ -19,19 +14,15 @@ export default function PreviewStep() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const voiceAudioRef = useRef<HTMLAudioElement>(null);
   const musicAudioRef = useRef<HTMLAudioElement>(null);
 
   const togglePlayPause = () => {
-    const voiceAudio = voiceAudioRef.current;
     const musicAudio = musicAudioRef.current;
 
     if (isPlaying) {
-      voiceAudio?.pause();
       musicAudio?.pause();
       setIsPlaying(false);
     } else {
-      voiceAudio?.play();
       musicAudio?.play();
       setIsPlaying(true);
     }
@@ -48,14 +39,6 @@ export default function PreviewStep() {
     }
   }, [letterData.musicVolume]);
 
-  const handleOnEnded = () => {
-    setIsPlaying(false);
-    if (musicAudioRef.current) {
-        musicAudioRef.current.pause();
-        musicAudioRef.current.currentTime = 0;
-    }
-  }
-
   const handleEdit = () => {
     router.push('/create/write');
   };
@@ -68,75 +51,30 @@ export default function PreviewStep() {
     setIsLoading(true);
 
     try {
-      // 1. Generate and export key
-      const encryptionKey = await generateEncryptionKey();
-      const exportedKey = await exportKeyToString(encryptionKey);
-
-      // 2. Prepare data for encryption
-      let audioDataUrl: string | null = null;
-      if (letterData.audioBlob) {
-        const audioBlob = letterData.audioBlob;
-        audioDataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(audioBlob);
-        });
-      }
-
-      const dataToEncrypt = {
-        content: letterData.content,
-        audioDataUrl: audioDataUrl,
-        senderName: letterData.senderName,
-        musicUrl: letterData.musicUrl,
-        musicVolume: letterData.musicVolume,
-      };
-
-      // 3. Encrypt the data
-      const jsonString = JSON.stringify(dataToEncrypt);
-      const dataBuffer = new TextEncoder().encode(jsonString);
-      const encryptedBuffer = await encryptData(encryptionKey, dataBuffer);
-
-      // 4. Upload the encrypted file
-      const encryptedFile = new Blob([encryptedBuffer], { type: 'application/octet-stream' });
-      const filePath = `${letterData.shareCode}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('encrypted-letters')
-        .upload(filePath, encryptedFile, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // 5. Update the database record
+      // 1. Update the database record
       const finalizedAt = new Date().toISOString();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
       const managementToken = shortUUID.generate();
 
       const updateData: Partial<Letter> = {
+        content: letterData.content,
         finalized_at: finalizedAt,
-        expires_at: expiresAt.toISOString(),
         management_token: managementToken,
-        storage_path: filePath,
         theme: letterData.theme,
         music_url: letterData.musicUrl,
         music_volume: letterData.musicVolume,
-        // content and audio_url are no longer stored directly
       };
 
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('letters')
         .update(updateData)
         .eq('share_code', letterData.shareCode);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      // 6. Redirect the user
-      if (letterData.shareCode) {
-        localStorage.removeItem('unfinalizedShareCode');
-        localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
-      }
-      router.replace(`/manage/${managementToken}?key=${exportedKey}`);
+      // 2. Redirect the user
+      localStorage.removeItem('unfinalizedShareCode');
+      localStorage.setItem('lastFinalizedShareCode', letterData.shareCode);
+      router.replace(`/manage/${managementToken}`);
 
     } catch (error) {
       console.error('Error finalizing letter:', error);
@@ -170,6 +108,7 @@ export default function PreviewStep() {
             ref={musicAudioRef}
             src={letterData.musicUrl}
             loop
+            onEnded={() => setIsPlaying(false)}
           />
         )}
 
