@@ -28,11 +28,17 @@ export default function AuthModal({
     setMessage('');
     setLoading(true);
 
-    const redirectTo = process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback`
-      : `${window.location.origin}/auth/callback`;
+    const getRedirectUrl = () => {
+      if (process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL) {
+        return `https://${process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL}/auth/callback`;
+      }
+      if (process.env.NEXT_PUBLIC_SITE_URL) {
+        return `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+      }
+      return `${window.location.origin}/auth/callback`;
+    };
 
-    console.log("Using redirect URL:", redirectTo); // DEBUGGING LINE
+    const redirectTo = getRedirectUrl();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
