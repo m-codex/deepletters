@@ -31,6 +31,8 @@ export default function AuthModal({
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        // The redirect URL is dynamically set to the current window's origin.
+        // This ensures the user is redirected back to the correct deployment (production or preview).
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
