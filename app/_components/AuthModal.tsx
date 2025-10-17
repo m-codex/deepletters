@@ -32,6 +32,8 @@ export default function AuthModal({
       ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback`
       : `${window.location.origin}/auth/callback`;
 
+    console.log("Using redirect URL:", redirectTo); // DEBUGGING LINE
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
