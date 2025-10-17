@@ -12,6 +12,7 @@ export type LetterData = {
   finalized_at: string | null;
   management_token: string | null;
   theme: 'light' | 'dark';
+  temp_id: string | null;
 };
 
 interface LetterContextType {
@@ -31,6 +32,7 @@ const initialLetterData: LetterData = {
   finalized_at: null,
   management_token: null,
   theme: 'light',
+  temp_id: null,
 };
 
 export const LetterProvider = ({ children, shareCode }: { children: ReactNode, shareCode?: string }) => {
