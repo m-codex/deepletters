@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const tempId = requestUrl.searchParams.get("temp_id");
+  const shareCode = requestUrl.searchParams.get("share_code");
 
   if (code) {
     const cookieStore = cookies();
@@ -32,23 +33,40 @@ export async function GET(request: NextRequest) {
 
     const {
       data: { session },
+      error: sessionError,
     } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (session && tempId) {
-      const { error } = await supabase
-        .from("letters")
-        .update({ sender_id: session.user.id })
-        .eq("temp_id", tempId);
+    if (sessionError) {
+      console.error("Error exchanging code for session:", sessionError);
+      return NextResponse.redirect(new URL("/error", request.url));
+    }
 
-      if (error) {
-        console.error("Error updating letter with user ID:", error);
+    if (session) {
+      // Handle sender flow: associate letter with the new user.
+      if (tempId) {
+        const { error } = await supabase
+          .from("letters")
+          .update({ sender_id: session.user.id })
+          .eq("temp_id", tempId);
+
+        if (error) {
+          console.error("Error updating letter with sender ID:", error);
+        }
+      }
+      // Handle recipient flow: associate letter with the new user.
+      else if (shareCode) {
+        const { error } = await supabase
+          .from("letters")
+          .update({ recipient_id: session.user.id })
+          .eq("share_code", shareCode);
+
+        if (error) {
+          console.error("Error updating letter with recipient ID:", error);
+        }
       }
     }
   }
 
-  const redirectUrl = new URL(`${requestUrl.origin}/dashboard`);
-  if (tempId) {
-    redirectUrl.searchParams.set("temp_id", tempId);
-  }
-  return NextResponse.redirect(redirectUrl);
+  // Redirect to the dashboard after successful authentication.
+  return NextResponse.redirect(new URL("/dashboard", request.url));
 }
