@@ -8,6 +8,10 @@ export function useAuthRedirect(shareCode?: string) {
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log(
+      "Debugging Vercel URL:",
+      process.env.NEXT_PUBLIC_VERCEL_URL,
+    );
     const tempId = localStorage.getItem(TEMP_ID_STORAGE_KEY);
     let baseRedirectUrl: string;
 
