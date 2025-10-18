@@ -231,6 +231,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
         onClose={() => setIsAuthModalOpen(false)}
         title="Save This Letter"
         description="Sign up for a free account to keep this letter and manage all your future correspondence."
+        shareCode={shareCode}
       />
 
       <style>{`
