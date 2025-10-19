@@ -64,9 +64,11 @@ export async function GET(request: NextRequest) {
           console.error("Error updating letter with recipient ID:", error);
         }
       }
+      // Only redirect to the dashboard if the session was successfully created.
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
-  // Redirect to the dashboard after successful authentication.
-  return NextResponse.redirect(new URL("/dashboard", request.url));
+  // If there is no code or the session creation fails, redirect to the homepage.
+  return NextResponse.redirect(new URL("/", request.url));
 }
