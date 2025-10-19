@@ -101,24 +101,37 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    const initDashboard = async () => {
-      // Clear the temp_id from localStorage if it exists
-      if (localStorage.getItem("tempId")) {
-        localStorage.removeItem("tempId");
-      }
+    // Clear the temp_id from localStorage if it exists.
+    // This is crucial for the sender flow after a magic link signup.
+    if (localStorage.getItem("tempId")) {
+      localStorage.removeItem("tempId");
+    }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
+    setLoading(true);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const currentUser = session.user;
+        setUser(currentUser);
+        fetchData(currentUser, view);
+      } else {
         router.push("/");
-        return;
       }
-      setUser(session.user);
-      await fetchData(session.user, view);
-      setLoading(false);
+    });
+
+    // On initial load, getSession can be faster for an existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+            // If getSession is fast and there's no session, we can stop loading early.
+            // onAuthStateChange will still handle the redirect.
+            setLoading(false);
+        }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    initDashboard();
   }, [supabase, router, view, fetchData]);
 
   if (loading && !user) {
