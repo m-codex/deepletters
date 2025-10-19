@@ -9,13 +9,19 @@ export function useAuthRedirect(shareCode?: string) {
 
   useEffect(() => {
     const tempId = localStorage.getItem(TEMP_ID_STORAGE_KEY);
-    let baseRedirectUrl: string;
+    let siteUrl: string;
 
-    // Use the current window's origin to construct the redirect URL.
-    // This is a reliable way to ensure the correct URL is used for all environments.
-    const siteUrl = window.location.origin;
-    baseRedirectUrl = `${siteUrl}/auth/callback`;
+    // For Vercel deployments, use the NEXT_PUBLIC_VERCEL_URL environment variable.
+    // This is more reliable than window.location.origin.
+    // The protocol (https://) needs to be added manually.
+    if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+      siteUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+    } else {
+      // Fallback for local development or other environments.
+      siteUrl = window.location.origin;
+    }
 
+    const baseRedirectUrl = `${siteUrl}/auth/callback`;
     const url = new URL(baseRedirectUrl);
 
     // Append temp_id for senders or share_code for recipients.
