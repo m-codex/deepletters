@@ -92,13 +92,6 @@ export default function AuthModal({
 
         {message && <p className="mt-4 text-center text-green-500">{message}</p>}
         {error && <p className="mt-4 text-center text-red-500">{error}</p>}
-
-        <div className="mt-4 p-2 bg-gray-700 rounded">
-          <p className="text-xs text-gray-300">
-            <strong>Debug Info:</strong> Redirecting to:
-          </p>
-          <p className="text-xs text-gray-400 break-all">{redirectTo}</p>
-        </div>
       </div>
       <style jsx>{`
         @keyframes fadeInUp {
