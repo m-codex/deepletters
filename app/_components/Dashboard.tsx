@@ -102,6 +102,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     const initDashboard = async () => {
+      // Clear the temp_id from localStorage if it exists
+      if (localStorage.getItem("tempId")) {
+        localStorage.removeItem("tempId");
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();

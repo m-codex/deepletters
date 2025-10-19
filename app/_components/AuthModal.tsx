@@ -10,6 +10,7 @@ interface AuthModalProps {
   onClose: () => void;
   title?: string;
   description?: string;
+  shareCode?: string;
 }
 
 export default function AuthModal({
@@ -17,12 +18,13 @@ export default function AuthModal({
   onClose,
   title = "Sign In / Sign Up",
   description = "Enter your email to receive a magic link to access your dashboard.",
+  shareCode,
 }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const redirectTo = useAuthRedirect();
+  const redirectTo = useAuthRedirect(shareCode);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
