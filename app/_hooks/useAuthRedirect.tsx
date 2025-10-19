@@ -8,18 +8,17 @@ export function useAuthRedirect(shareCode?: string) {
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log(
-      "Debugging Vercel URL:",
-      process.env.NEXT_PUBLIC_VERCEL_URL,
-    );
     const tempId = localStorage.getItem(TEMP_ID_STORAGE_KEY);
     let baseRedirectUrl: string;
 
     // Use Vercel's URL for preview deployments, otherwise fall back to the window's origin.
     // This is the recommended approach for handling dynamic redirect URLs.
-    const siteUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : window.location.origin;
+    let vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+    if (vercelUrl && !vercelUrl.startsWith("http")) {
+      vercelUrl = `https://${vercelUrl}`;
+    }
+
+    const siteUrl = vercelUrl || window.location.origin;
     baseRedirectUrl = `${siteUrl}/auth/callback`;
 
     const url = new URL(baseRedirectUrl);
