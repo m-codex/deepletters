@@ -16,9 +16,11 @@ export function useAuthRedirect(shareCode?: string) {
     // The protocol (https://) needs to be added manually.
     if (process.env.NEXT_PUBLIC_VERCEL_URL) {
       siteUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+      console.log("useAuthRedirect: Using Vercel URL:", siteUrl);
     } else {
       // Fallback for local development or other environments.
       siteUrl = window.location.origin;
+      console.log("useAuthRedirect: Using window.location.origin:", siteUrl);
     }
 
     const baseRedirectUrl = `${siteUrl}/auth/callback`;
@@ -32,7 +34,9 @@ export function useAuthRedirect(shareCode?: string) {
       url.searchParams.set("share_code", shareCode);
     }
 
-    setRedirectTo(url.toString());
+    const finalRedirectUrl = url.toString();
+    console.log("useAuthRedirect: Final redirectTo URL:", finalRedirectUrl);
+    setRedirectTo(finalRedirectUrl);
   }, [shareCode]);
 
   return redirectTo;

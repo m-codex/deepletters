@@ -134,7 +134,10 @@ export default function Dashboard() {
     };
   }, [supabase, router, view, fetchData]);
 
+  console.log(`Dashboard Component Render - Loading: ${loading}, User: ${user ? user.id : 'null'}`);
+
   if (loading && !user) {
+    console.log("Dashboard: Render loading spinner.");
     return (
       <div className="flex items-center justify-center min-h-screen bg-primary-bg">
         <Loader2 className="w-12 h-12 text-btn-primary animate-spin" />
