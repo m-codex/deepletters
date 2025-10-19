@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/_lib/supabase";
+import { createBrowserClient } from "@supabase/ssr";
 import { X } from "lucide-react";
 import { useAuthRedirect } from "@/_hooks/useAuthRedirect";
 
@@ -20,6 +20,10 @@ export default function AuthModal({
   description = "Enter your email to receive a magic link to access your dashboard.",
   shareCode,
 }: AuthModalProps) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");

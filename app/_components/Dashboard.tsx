@@ -101,43 +101,27 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    // Clear the temp_id from localStorage if it exists.
-    // This is crucial for the sender flow after a magic link signup.
-    if (localStorage.getItem("tempId")) {
-      localStorage.removeItem("tempId");
-    }
-
-    setLoading(true);
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        const currentUser = session.user;
-        setUser(currentUser);
-        fetchData(currentUser, view);
-      } else {
-        router.push("/");
+    const initDashboard = async () => {
+      // Clear the temp_id from localStorage if it exists
+      if (localStorage.getItem("tempId")) {
+        localStorage.removeItem("tempId");
       }
-    });
 
-    // On initial load, getSession can be faster for an existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) {
-            // If getSession is fast and there's no session, we can stop loading early.
-            // onAuthStateChange will still handle the redirect.
-            setLoading(false);
-        }
-    });
-
-    return () => {
-      subscription.unsubscribe();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.push("/");
+        return;
+      }
+      setUser(session.user);
+      await fetchData(session.user, view);
+      setLoading(false);
     };
+    initDashboard();
   }, [supabase, router, view, fetchData]);
 
-  console.log(`Dashboard Component Render - Loading: ${loading}, User: ${user ? user.id : 'null'}`);
-
   if (loading && !user) {
-    console.log("Dashboard: Render loading spinner.");
     return (
       <div className="flex items-center justify-center min-h-screen bg-primary-bg">
         <Loader2 className="w-12 h-12 text-btn-primary animate-spin" />
