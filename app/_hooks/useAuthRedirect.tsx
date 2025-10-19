@@ -11,14 +11,9 @@ export function useAuthRedirect(shareCode?: string) {
     const tempId = localStorage.getItem(TEMP_ID_STORAGE_KEY);
     let baseRedirectUrl: string;
 
-    // Use Vercel's URL for preview deployments, otherwise fall back to the window's origin.
-    // This is the recommended approach for handling dynamic redirect URLs.
-    let vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
-    if (vercelUrl && !vercelUrl.startsWith("http")) {
-      vercelUrl = `https://${vercelUrl}`;
-    }
-
-    const siteUrl = vercelUrl || window.location.origin;
+    // Use the current window's origin to construct the redirect URL.
+    // This is a reliable way to ensure the correct URL is used for all environments.
+    const siteUrl = window.location.origin;
     baseRedirectUrl = `${siteUrl}/auth/callback`;
 
     const url = new URL(baseRedirectUrl);
