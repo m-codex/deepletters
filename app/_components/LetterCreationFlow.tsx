@@ -39,7 +39,7 @@ function LetterCreationLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen theme-${letterData.theme}`}>
       <div className="container mx-auto px-4 sm:px-6 py-8">
 
         <div className="mb-8">
