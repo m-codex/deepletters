@@ -2,21 +2,19 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, Letter } from '@/_lib/supabase';
+import { Letter } from '@/_lib/supabase';
 import { Mail, Volume2, VolumeX, Save, LayoutDashboard } from 'lucide-react';
 import AuthModal from './AuthModal';
-import { createBrowserClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
+import { useSupabase } from './SupabaseProvider';
 
 export default function LetterViewer({ shareCode }: { shareCode: string }) {
   const [letter, setLetter] = useState<Letter | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isSaved, setIsSaved] = useState(false);
-  const supabaseClient = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = useSupabase();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -58,7 +56,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     loadLetter();
     const {
       data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         setUser(session.user);
       } else {
@@ -69,7 +67,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [loadLetter, supabaseClient.auth]);
+  }, [loadLetter, supabase.auth]);
 
   useEffect(() => {
     if (user && letter && !isSaved) {
@@ -79,30 +77,26 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
   const handleSaveLetter = async () => {
     if (!user || !letter) {
-      // If user is not logged in, open the auth modal instead.
       setIsAuthModalOpen(true);
       return;
     }
 
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('saved_letters')
         .insert({ user_id: user.id, letter_id: letter.id });
 
-      if (error) {
-        // Handle potential primary key violation if letter is already saved
-        if (error.code === '23505') {
-          alert('You have already saved this letter.');
-        } else {
-          throw error;
-        }
-      } else {
-        setIsSaved(true);
-        alert('Letter saved to your dashboard!');
+      if (error && error.code !== '23505') { // Ignore if already saved
+        throw error;
       }
+
+      setIsSaved(true);
     } catch (err) {
       console.error('Error saving letter:', err);
       alert('Could not save the letter. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -230,10 +224,15 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
               {user ? (
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+                  disabled={isSaving}
+                  className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  <LayoutDashboard className="w-5 h-5" />
-                  Go to Dashboard
+                  {isSaving ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <LayoutDashboard className="w-5 h-5" />
+                  )}
+                  {isSaving ? 'Saving...' : 'Go to Dashboard'}
                 </button>
               ) : (
                 <button

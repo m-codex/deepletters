@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { useSupabase } from './SupabaseProvider';
 
 export type LetterData = {
   shareCode: string | null;
@@ -35,7 +35,8 @@ const initialLetterData: LetterData = {
   temp_id: null,
 };
 
-export const LetterProvider = ({ children, shareCode, supabase }: { children: ReactNode, shareCode?: string, supabase: SupabaseClient }) => {
+export const LetterProvider = ({ children, shareCode }: { children: ReactNode, shareCode?: string }) => {
+  const supabase = useSupabase();
   const [letterData, setLetterData] = useState<LetterData>(initialLetterData);
   const [loading, setLoading] = useState(true);
 

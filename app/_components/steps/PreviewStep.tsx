@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useLetterData } from "../useLetterData";
 import { MailCheck, Play, Pause } from "lucide-react";
 import StepWrapper from "./StepWrapper";
-import { supabase, Letter } from "@/_lib/supabase";
+import { Letter } from "@/_lib/supabase";
+import { useSupabase } from "../SupabaseProvider";
 import shortUUID from "short-uuid";
 
 export default function PreviewStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
+  const supabase = useSupabase();
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 

@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { PenLine, Sun, Moon } from 'lucide-react';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
-import { supabase } from '@/_lib/supabase';
+import { useSupabase } from '../SupabaseProvider';
 import shortUUID from 'short-uuid';
 
 export default function WriteStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
+  const supabase = useSupabase();
   const [content, setContent] = useState(letterData.content);
   const [senderName, setSenderName] = useState(letterData.senderName);
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);

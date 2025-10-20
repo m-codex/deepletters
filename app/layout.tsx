@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SupabaseProvider from "@/_components/SupabaseProvider";
 
 export const metadata: Metadata = {
   title: "Deepletters - Send meaningful letters",
@@ -70,7 +71,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SupabaseProvider>{children}</SupabaseProvider>
+      </body>
     </html>
   );
 }
