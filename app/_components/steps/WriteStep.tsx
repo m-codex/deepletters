@@ -11,7 +11,6 @@ import shortUUID from 'short-uuid';
 export default function WriteStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
-  const [content, setContent] = useState(letterData.content);
   const [senderName, setSenderName] = useState(letterData.senderName);
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -19,7 +18,6 @@ export default function WriteStep() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   useEffect(() => {
-    setContent(letterData.content);
     setSenderName(letterData.senderName);
 
     if (letterData.senderName) {
@@ -59,7 +57,7 @@ export default function WriteStep() {
   const handleSave = async () => {
     setSaveStatus('saving');
     setIsSaving(true);
-    updateLetterData({ content, senderName });
+    updateLetterData({ content: letterData.content, senderName });
 
     // Only interact with the database to get a share code if one doesn't exist.
     // The actual content is not saved here anymore.
@@ -141,19 +139,18 @@ export default function WriteStep() {
   };
 
   return (
-    <div className={`theme-${letterData.theme}`}>
-      <StepWrapper
-        title="Write Your Letter"
-        description="Express your feelings, share your thoughts, or simply say hello"
-        icon={<PenLine className="w-8 h-8 text-btn-primary" />}
-        buttonText={isSaving ? 'Saving...' : 'Next Step'}
-        onNext={handleNext}
-        isNextDisabled={!content.trim() || isSaving}
-      >
-        <div className="bg-secondary-bg shadow-xl px-4 py-8 md:p-12 relative">
-          {!isNameSet ? (
-            <form
-              onSubmit={(e) => {
+    <StepWrapper
+      title="Write Your Letter"
+      description="Express your feelings, share your thoughts, or simply say hello"
+      icon={<PenLine className="w-8 h-8 text-btn-primary" />}
+      buttonText={isSaving ? 'Saving...' : 'Next Step'}
+      onNext={handleNext}
+      isNextDisabled={!letterData.content.trim() || isSaving}
+    >
+      <div className="bg-secondary-bg shadow-xl px-4 py-8 md:p-12 relative">
+        {!isNameSet ? (
+          <form
+            onSubmit={(e) => {
                 e.preventDefault();
                 handleNameSubmit();
               }}
@@ -226,14 +223,14 @@ export default function WriteStep() {
                 </div>
                 <textarea
                   id="letterContent"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  value={letterData.content}
+                  onChange={(e) => updateLetterData({ content: e.target.value })}
                   placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
                   rows={12}
                   className="w-full px-4 py-5 sm:px-8 sm:py-8 md:px-12 md:py-8 bg-primary-bg text-primary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg"
                 />
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-secondary">{content.split(/\s+/).filter(Boolean).length} words</p>
+                  <p className="text-sm text-secondary">{letterData.content.split(/\s+/).filter(Boolean).length} words</p>
                   <button
                     onClick={toggleTheme}
                     className="p-2 rounded-full hover:bg-secondary-bg"
@@ -250,7 +247,6 @@ export default function WriteStep() {
             </>
           )}
         </div>
-      </StepWrapper>
-    </div>
+    </StepWrapper>
   );
 }
