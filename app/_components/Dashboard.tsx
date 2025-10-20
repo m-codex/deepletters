@@ -40,6 +40,13 @@ export default function Dashboard() {
     router.push("/");
   };
 
+  const promptForNewFolder = () => {
+    const folderName = prompt("Enter a name for your new folder:");
+    if (folderName) {
+      handleNewFolder(folderName);
+    }
+  };
+
   const handleNewFolder = async (folderName: string, letterId: string | null = null) => {
     if (folderName && user) {
       try {
@@ -196,7 +203,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-2">
               <h3 className={`text-sm font-semibold text-secondary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</h3>
               {isSidebarOpen && (
-                <button onClick={handleNewFolder} className="text-btn-primary hover:text-btn-hover p-1 rounded-md">
+                <button onClick={promptForNewFolder} className="text-btn-primary hover:text-btn-hover p-1 rounded-md">
                   <Plus className="w-4 h-4" />
                 </button>
               )}
