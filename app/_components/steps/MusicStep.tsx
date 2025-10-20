@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Music, Check } from 'lucide-react';
-import { supabase } from '@/_lib/supabase';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
+import { useSupabase } from '../SupabaseProvider';
 
 type MusicTrack = {
   name: string;
@@ -20,15 +20,12 @@ type MusicCategory = {
 export default function MusicStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
+  const supabase = useSupabase();
   const [musicCategories, setMusicCategories] = useState<MusicCategory[]>([]);
   const [selectedMusicUrl, setSelectedMusicUrl] = useState<string | null>(letterData.musicUrl);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadMusicFromStorage();
-  }, []);
-
-  const loadMusicFromStorage = async () => {
+  const loadMusicFromStorage = useCallback(async () => {
     const { data: folders, error: foldersError } = await supabase.storage
       .from('music-tracks')
       .list();
@@ -84,7 +81,11 @@ export default function MusicStep() {
 
     setMusicCategories(categories);
     setLoading(false);
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    loadMusicFromStorage();
+  }, [loadMusicFromStorage]);
 
   const handleNext = () => {
     updateLetterData({ musicUrl: selectedMusicUrl });

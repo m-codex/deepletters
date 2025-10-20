@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Share2, Copy, Check, Loader2, Eye, Mail, Save } from 'lucide-react';
-import { supabase, Letter } from '@/_lib/supabase';
+import { Share2, Copy, Check, Loader2, Eye, Mail, Save, LayoutDashboard } from 'lucide-react';
+import { Letter } from '@/_lib/supabase';
 import AuthModal from './AuthModal';
+import { useSupabase } from './SupabaseProvider';
 
 export default function LetterPage({
   managementToken,
@@ -14,8 +15,10 @@ export default function LetterPage({
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const router = useRouter();
   const [letter, setLetter] = useState<Letter | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const supabase = useSupabase();
 
   const fetchData = useCallback(async () => {
     try {
@@ -39,11 +42,24 @@ export default function LetterPage({
     } finally {
       setLoading(false);
     }
-  }, [managementToken]);
+  }, [managementToken, supabase]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [fetchData, supabase.auth]);
 
   const shareUrl = letter
     ? `${window.location.origin}/letter/${letter.share_code}`
@@ -130,15 +146,25 @@ export default function LetterPage({
       <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
         <h3 className="text-2xl font-bold text-primary mb-3">Save Your Letters</h3>
         <p className="text-secondary mb-6">
-          Create a free account to save this letter and manage all your sent and received letters in one place.
+          {user ? "This letter is saved to your dashboard because you are the sender." : "Create a free account or log in to save this letter and manage all your correspondence in one place."}
         </p>
-        <button
-          onClick={() => setIsAuthModalOpen(true)}
-          className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
-        >
-          <Save className="w-5 h-5" />
-          Create Free Account
-        </button>
+        {user ? (
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Go to Dashboard
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          >
+            <Save className="w-5 h-5" />
+            Sign Up or Log In
+          </button>
+        )}
       </div>
 
       <button

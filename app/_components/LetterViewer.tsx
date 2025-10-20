@@ -1,26 +1,26 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase, Letter } from '@/_lib/supabase';
-import { Mail, Volume2, VolumeX, Save } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Letter } from '@/_lib/supabase';
+import { Mail, Volume2, VolumeX, Save, LayoutDashboard, Loader2 } from 'lucide-react';
 import AuthModal from './AuthModal';
-import { createBrowserClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
+import { useSupabase } from './SupabaseProvider';
 
 export default function LetterViewer({ shareCode }: { shareCode: string }) {
   const [letter, setLetter] = useState<Letter | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isSaved, setIsSaved] = useState(false);
-  const supabaseClient = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const [isSaving, setIsSaving] = useState(false);
+  const supabase = useSupabase();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
+  const router = useRouter();
 
   const loadLetter = useCallback(async () => {
     try {
@@ -49,48 +49,56 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     } finally {
       setLoading(false);
     }
-  }, [shareCode]);
+  }, [shareCode, supabase]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    loadLetter();
-    const checkUser = async () => {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        setUser(session.user);
-      }
-    };
-    checkUser();
-  }, [loadLetter, supabaseClient.auth]);
-
-  const handleSaveLetter = async () => {
+  const handleSaveLetter = useCallback(async () => {
     if (!user || !letter) {
-      // If user is not logged in, open the auth modal instead.
       setIsAuthModalOpen(true);
       return;
     }
 
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('saved_letters')
         .insert({ user_id: user.id, letter_id: letter.id });
 
-      if (error) {
-        // Handle potential primary key violation if letter is already saved
-        if (error.code === '23505') {
-          alert('You have already saved this letter.');
-        } else {
-          throw error;
-        }
-      } else {
-        setIsSaved(true);
-        alert('Letter saved to your dashboard!');
+      if (error && error.code !== '23505') { // Ignore if already saved
+        throw error;
       }
+
+      setIsSaved(true);
     } catch (err) {
       console.error('Error saving letter:', err);
       alert('Could not save the letter. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
-  };
+  }, [user, letter, supabase]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadLetter();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadLetter, supabase.auth]);
+
+  useEffect(() => {
+    if (user && letter && !isSaved) {
+      handleSaveLetter();
+    }
+  }, [user, letter, isSaved, handleSaveLetter]);
 
   useEffect(() => {
     if (musicAudioRef.current && typeof letter?.music_volume === 'number') {
@@ -206,16 +214,30 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
             <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
               <h3 className="text-2xl font-bold text-primary mb-3">Save This Letter</h3>
               <p className="text-secondary mb-6">
-                {user ? "Add this letter to your collection." : "Create a free account to save this letter and manage all your received letters in one place."}
+                {user ? "This letter has been automatically saved to your dashboard." : "Create a free account or log in to save this letter and manage all your received letters in one place."}
               </p>
-              <button
-                onClick={handleSaveLetter}
-                disabled={isSaved}
-                className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <Save className="w-5 h-5" />
-                {isSaved ? 'Saved!' : user ? 'Save to My Dashboard' : 'Create Free Account to Save'}
-              </button>
+              {user ? (
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  disabled={isSaving}
+                  className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <LayoutDashboard className="w-5 h-5" />
+                  )}
+                  {isSaving ? 'Saving...' : 'Go to Dashboard'}
+                </button>
+              ) : (
+                <button
+                  onClick={handleSaveLetter}
+                  className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+                >
+                  <Save className="w-5 h-5" />
+                  Sign Up or Log In
+                </button>
+              )}
             </div>
           </>
         )}

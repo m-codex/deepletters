@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
+import { useSupabase } from "@/_components/SupabaseProvider";
 import {
   Plus,
   Send,
@@ -20,10 +20,7 @@ import LetterDetailModal from "./LetterDetailModal";
 type View = "sent" | "received" | string;
 
 export default function Dashboard() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const supabase = useSupabase();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +28,7 @@ export default function Dashboard() {
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const [view, setView] = useState<View>("sent");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedFolderName, setSelectedFolderName] = useState<string | null>(null);
   const [selectedLetter, setSelectedLetter] =
     useState<LetterWithSubject | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -40,8 +38,14 @@ export default function Dashboard() {
     router.push("/");
   };
 
-  const handleNewFolder = async () => {
+  const promptForNewFolder = () => {
     const folderName = prompt("Enter a name for your new folder:");
+    if (folderName) {
+      handleNewFolder(folderName);
+    }
+  };
+
+  const handleNewFolder = async (folderName: string, letterId: string | null = null) => {
     if (folderName && user) {
       try {
         const { data, error } = await supabase
@@ -49,14 +53,43 @@ export default function Dashboard() {
           .insert({ name: folderName, user_id: user.id })
           .select()
           .single();
+
         if (error) throw error;
+
         if (data) {
           setFolders((prev) => [...prev, data]);
+          if (letterId) {
+            await handleFolderAssign(letterId, data.id);
+          }
+          return data;
         }
       } catch (err) {
         console.error("Error creating folder:", err);
         alert("Could not create the folder. Please try again.");
       }
+    }
+    return null;
+  };
+
+  const handleFolderAssign = async (letterId: string, folderId: string | null) => {
+    try {
+      if (folderId) {
+        const { error } = await supabase.from('folder_letters').upsert({
+          letter_id: letterId,
+          folder_id: folderId,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('folder_letters').delete().match({ letter_id: letterId });
+        if (error) throw error;
+      }
+      // Optionally, refetch data or update local state to reflect the change
+      if (user) {
+        await fetchData(user, view);
+      }
+    } catch (err) {
+      console.error("Error assigning folder:", err);
+      alert("Could not assign the folder. Please try again.");
     }
   };
 
@@ -66,20 +99,38 @@ export default function Dashboard() {
       try {
         let lettersData: LetterWithSubject[] = [];
         if (currentView === "sent") {
-          const { data, error } = await supabase.rpc("get_letters_for_user", {
-            p_user_id: user.id,
-          });
+          const { data, error } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
           lettersData = data || [];
         } else if (currentView === "received") {
-          const { data, error } = await supabase.rpc(
-            "get_saved_letters_for_user",
-            { p_user_id: user.id },
-          );
+          const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
           lettersData = data || [];
         } else {
-          lettersData = [];
+          const { data: folderLetters, error: lfError } = await supabase
+            .from('folder_letters')
+            .select('letter_id')
+            .eq('folder_id', currentView);
+
+          if (lfError) throw lfError;
+
+          if (folderLetters) {
+            const letterIds = folderLetters.map(lf => lf.letter_id);
+            if (letterIds.length > 0) {
+              const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
+              const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
+
+              if (sentError) throw sentError;
+              if (receivedError) throw receivedError;
+
+              const allLetters = [...(sentLetters || []), ...(receivedLetters || [])];
+              const uniqueLetters = Array.from(new Map(allLetters.map(l => [l.id, l])).values());
+
+              lettersData = uniqueLetters.filter(l => letterIds.includes(l.id));
+            } else {
+              lettersData = [];
+            }
+          }
         }
         setLetters(lettersData);
 
@@ -140,24 +191,24 @@ export default function Dashboard() {
           <Plus className="w-6 h-6" /> {isSidebarOpen && 'New Letter'}
         </button>
         <nav className="space-y-2">
-          <button onClick={() => setView('sent')} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Send className="w-5 h-5" /> {isSidebarOpen && 'Sent'}
           </button>
-          <button onClick={() => setView('received')} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
           </button>
           <div className="pt-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className={`text-sm font-semibold text-secondary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</h3>
               {isSidebarOpen && (
-                <button onClick={handleNewFolder} className="text-btn-primary hover:text-btn-hover p-1 rounded-md">
+                <button onClick={promptForNewFolder} className="text-btn-primary hover:text-btn-hover p-1 rounded-md">
                   <Plus className="w-4 h-4" />
                 </button>
               )}
             </div>
             <div className="space-y-1">
               {folders.map(folder => (
-                <button key={folder.id} onClick={() => setView(folder.id)} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+                <button key={folder.id} onClick={() => { setView(folder.id); setSelectedFolderName(folder.name); }} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
                   <Folder className="w-5 h-5" /> {isSidebarOpen && <span className="truncate">{folder.name}</span>}
                 </button>
               ))}
@@ -176,7 +227,7 @@ export default function Dashboard() {
   const MainContent = () => (
     <main className="flex-1 p-8 bg-primary-bg">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-primary capitalize">{view}</h1>
+        <h1 className="text-3xl font-bold text-primary capitalize">{selectedFolderName || view}</h1>
         <div>
           {/* Action buttons like 'New Folder' can go here */}
         </div>
@@ -195,33 +246,89 @@ export default function Dashboard() {
     </main>
   );
 
-  const LetterCard = ({ letter }: { letter: LetterWithSubject }) => (
-    <div
-      onClick={() => {
-        setSelectedLetter(letter);
-        setIsDetailModalOpen(true);
-      }}
-      className="bg-secondary-bg rounded-lg shadow-md p-4 flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer"
-    >
-      <div>
-        <h3 className="font-bold text-lg text-primary mb-2 truncate">{letter.user_subject || letter.subject || 'No Subject'}</h3>
-        <p className="text-sm text-secondary mb-4">To: {letter.recipient_name || 'Anonymous'}</p>
-        <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
+  const LetterCard = ({ letter }: { letter: LetterWithSubject }) => {
+    const [subject, setSubject] = useState(letter.user_subject || letter.subject || '');
+    const [isEditing, setIsEditing] = useState(false);
+
+    const onSubjectSave = async () => {
+      if (user) {
+        await handleSubjectSave(letter.id, subject, user.id);
+        setIsEditing(false);
+      }
+    };
+
+    return (
+      <div
+        className="bg-secondary-bg rounded-lg shadow-md p-4 flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer"
+      >
+        <div onClick={() => {
+          setSelectedLetter(letter);
+          setIsDetailModalOpen(true);
+        }}>
+          {isEditing ? (
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                className="flex-grow w-full px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md"
+              />
+              <button onClick={(e) => { e.stopPropagation(); onSubjectSave(); }} className="px-2 py-1 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Save</button>
+            </div>
+          ) : (
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-bold text-lg text-primary truncate pr-2">{subject || 'No Subject'}</h3>
+              <button onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} className="p-1 text-secondary hover:text-primary">
+                <Edit className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          <p className="text-sm text-secondary mb-4">To: {letter.recipient_name || 'Anonymous'}</p>
+          <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
+        </div>
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-xs text-gray-400">
+            {new Date(letter.created_at).toLocaleDateString()}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/letter/${letter.share_code}`);
+            }}
+            className="text-xs bg-btn-secondary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+          >
+            View Letter
+          </button>
+        </div>
       </div>
-      <div className="text-xs text-gray-400 mt-4">
-        {new Date(letter.created_at).toLocaleDateString()}
-      </div>
-    </div>
-  );
+    );
+  };
+
 
   const handleSubjectUpdate = (letterId: string, newSubject: string) => {
     setLetters(prevLetters =>
       prevLetters.map(l =>
-        l.id === letterId ? { ...l, user_subject: newSubject } : l
+        l.id === letterId ? { ...l, user_subject: newSubject, subject: newSubject } : l
       )
     );
     if (selectedLetter && selectedLetter.id === letterId) {
-      setSelectedLetter(prev => prev ? { ...prev, user_subject: newSubject } : null);
+      setSelectedLetter(prev => prev ? { ...prev, user_subject: newSubject, subject: newSubject } : null);
+    }
+  };
+
+  const handleSubjectSave = async (letterId: string, subject: string, userId: string) => {
+    try {
+      const { error } = await supabase.from('user_letter_subjects').upsert({
+        user_id: userId,
+        letter_id: letterId,
+        subject: subject,
+      });
+      if (error) throw error;
+      handleSubjectUpdate(letterId, subject);
+    } catch (err) {
+      console.error('Error saving subject:', err);
+      alert('Failed to save subject.');
     }
   };
 
@@ -229,13 +336,19 @@ export default function Dashboard() {
     <div className="flex min-h-screen">
       <Sidebar />
       <MainContent />
-      <LetterDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        letter={selectedLetter}
-        user={user}
-        onSubjectUpdate={handleSubjectUpdate}
-      />
+      {isDetailModalOpen && (
+        <LetterDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          letter={selectedLetter}
+          user={user}
+          onSubjectUpdate={handleSubjectUpdate}
+          folders={folders}
+          onNewFolder={(folderName) => handleNewFolder(folderName, selectedLetter?.id || null)}
+          onSubjectSave={handleSubjectSave}
+          onFolderAssign={handleFolderAssign}
+        />
+      )}
     </div>
   );
 }

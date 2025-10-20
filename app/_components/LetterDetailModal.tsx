@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/_lib/supabase';
 import { X, Save } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { LetterWithSubject } from '@/_lib/supabase';
+import { useSupabase } from './SupabaseProvider';
 
 interface LetterDetailModalProps {
   isOpen: boolean;
@@ -12,6 +12,10 @@ interface LetterDetailModalProps {
   letter: LetterWithSubject | null;
   user: User | null;
   onSubjectUpdate: (letterId: string, newSubject: string) => void;
+  folders: { id: string; name: string }[];
+  onNewFolder: (folderName: string) => Promise<{ id: string; name: string } | null>;
+  onSubjectSave: (letterId: string, subject: string, userId: string) => Promise<void>;
+  onFolderAssign: (letterId: string, folderId: string | null) => Promise<void>;
 }
 
 export default function LetterDetailModal({
@@ -20,34 +24,58 @@ export default function LetterDetailModal({
   letter,
   user,
   onSubjectUpdate,
+  folders,
+  onNewFolder,
+  onSubjectSave,
+  onFolderAssign,
 }: LetterDetailModalProps) {
+  const supabase = useSupabase();
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
 
   useEffect(() => {
     if (letter) {
-      setSubject(letter.user_subject || '');
+      setSubject(letter.user_subject || letter.subject || '');
+      const fetchInitialFolder = async () => {
+        const { data } = await supabase
+          .from('folder_letters')
+          .select('folder_id')
+          .eq('letter_id', letter.id)
+          .single();
+        if (data) {
+          setSelectedFolder(data.folder_id);
+        } else {
+          setSelectedFolder(null);
+        }
+      };
+      fetchInitialFolder();
     }
-  }, [letter]);
+  }, [letter, supabase]);
 
   if (!isOpen || !letter || !user) return null;
 
   const handleSubjectSave = async () => {
     setIsSaving(true);
-    try {
-      const { error } = await supabase.from('user_letter_subjects').upsert({
-        user_id: user.id,
-        letter_id: letter.id,
-        subject: subject,
-      });
-      if (error) throw error;
-      onSubjectUpdate(letter.id, subject);
-      alert('Subject saved!');
-    } catch (err) {
-      console.error('Error saving subject:', err);
-      alert('Failed to save subject.');
-    } finally {
-      setIsSaving(false);
+    await onSubjectSave(letter.id, subject, user.id);
+    setIsSaving(false);
+  };
+
+  const handleFolderChange = (folderId: string | null) => {
+    setSelectedFolder(folderId);
+    onFolderAssign(letter.id, folderId);
+  };
+
+  const handleCreateFolder = async () => {
+    if (newFolderName.trim() === '') return;
+    const newFolder = await onNewFolder(newFolderName.trim());
+    if (newFolder) {
+      setSelectedFolder(newFolder.id);
+      onFolderAssign(letter.id, newFolder.id);
+      setNewFolderName('');
+      setIsCreatingFolder(false);
     }
   };
 
@@ -86,6 +114,41 @@ export default function LetterDetailModal({
               {isSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <label htmlFor="folder-select" className="block text-sm font-medium text-secondary mb-2">
+            Assign to Folder
+          </label>
+          <div className="flex gap-2">
+            <select
+              id="folder-select"
+              value={selectedFolder || ''}
+              onChange={(e) => handleFolderChange(e.target.value || null)}
+              className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-secondary rounded-md"
+            >
+              <option value="">No folder</option>
+              {folders.map(folder => (
+                <option key={folder.id} value={folder.id}>{folder.name}</option>
+              ))}
+            </select>
+            <button onClick={() => setIsCreatingFolder(true)} className="px-4 py-2 bg-btn-secondary text-white rounded-md hover:bg-btn-hover">
+              New
+            </button>
+          </div>
+          {isCreatingFolder && (
+            <div className="mt-2 flex gap-2">
+              <input
+                type="text"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="New folder name"
+                className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-secondary rounded-md"
+              />
+              <button onClick={handleCreateFolder} className="px-4 py-2 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Create</button>
+              <button onClick={() => setIsCreatingFolder(false)} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Cancel</button>
+            </div>
+          )}
         </div>
 
         <div className="flex-grow overflow-y-auto p-6 bg-primary-bg rounded-md">

@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation';
 import { PenLine, Sun, Moon } from 'lucide-react';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
-import { supabase } from '@/_lib/supabase';
+import { useSupabase } from '../SupabaseProvider';
 import shortUUID from 'short-uuid';
+import type { User } from '@supabase/supabase-js';
 
 export default function WriteStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
+  const supabase = useSupabase();
+  const [user, setUser] = useState<User | null>(null);
+  const [content, setContent] = useState(letterData.content);
   const [senderName, setSenderName] = useState(letterData.senderName);
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -43,7 +47,15 @@ export default function WriteStep() {
     } else {
       updateLetterData({ temp_id: tempId });
     }
-  }, [updateLetterData]);
+
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+      }
+    };
+    checkUser();
+  }, [updateLetterData, supabase.auth]);
 
   const handleNameSubmit = () => {
     if (senderName.trim()) {
@@ -72,6 +84,7 @@ export default function WriteStep() {
           sender_name: senderName, // Save sender name for identification
           theme: letterData.theme,
           temp_id: letterData.temp_id,
+          sender_id: user?.id,
         })
         .select()
         .single();
@@ -114,18 +127,7 @@ export default function WriteStep() {
 
       // Clear local storage and reset state
       localStorage.removeItem('unfinalizedShareCode');
-      localStorage.removeItem('letterData');
-      localStorage.removeItem('temp_id');
-      updateLetterData({
-        shareCode: null,
-        content: '',
-        senderName: '',
-        musicUrl: null,
-        musicVolume: 0.5,
-        finalized_at: null,
-        management_token: null,
-        temp_id: null,
-      });
+      updateLetterData({ shareCode: null });
       router.replace('/');
 
     } catch (error) {

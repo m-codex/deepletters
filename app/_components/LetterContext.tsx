@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { supabase } from '@/_lib/supabase';
+import { useSupabase } from './SupabaseProvider';
 
 export type LetterData = {
   shareCode: string | null;
@@ -36,6 +36,7 @@ const initialLetterData: LetterData = {
 };
 
 export const LetterProvider = ({ children, shareCode }: { children: ReactNode, shareCode?: string }) => {
+  const supabase = useSupabase();
   const [letterData, setLetterData] = useState<LetterData>(initialLetterData);
   const [loading, setLoading] = useState(true);
 
@@ -73,7 +74,14 @@ export const LetterProvider = ({ children, shareCode }: { children: ReactNode, s
   }, [letterData]);
 
   const updateLetterData = useCallback((data: Partial<LetterData>) => {
-    setLetterData((prev) => ({ ...prev, ...data }));
+    if (data.shareCode === null) {
+      // If we are explicitly clearing the letter (e.g., discarding or finalizing),
+      // remove it from local storage and reset the state to initial.
+      localStorage.removeItem('letterData');
+      setLetterData(initialLetterData);
+    } else {
+      setLetterData((prev) => ({ ...prev, ...data }));
+    }
   }, []);
 
   return (
