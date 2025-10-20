@@ -296,7 +296,7 @@ export default function Dashboard() {
               e.stopPropagation();
               router.push(`/letter/${letter.share_code}`);
             }}
-            className="text-xs bg-btn-secondary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+            className="text-xs bg-btn-primary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
           >
             View Letter
           </button>
