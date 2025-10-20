@@ -14,6 +14,7 @@ export default function LetterPage({
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const router = useRouter();
   const [letter, setLetter] = useState<Letter | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -43,6 +44,13 @@ export default function LetterPage({
 
   useEffect(() => {
     fetchData();
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+      }
+    };
+    checkUser();
   }, [fetchData]);
 
   const shareUrl = letter
@@ -130,14 +138,15 @@ export default function LetterPage({
       <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
         <h3 className="text-2xl font-bold text-primary mb-3">Save Your Letters</h3>
         <p className="text-secondary mb-6">
-          Create a free account to save this letter and manage all your sent and received letters in one place.
+          {user ? "This letter is saved to your dashboard because you are the sender." : "Create a free account or log in to save this letter and manage all your correspondence in one place."}
         </p>
         <button
           onClick={() => setIsAuthModalOpen(true)}
-          className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          disabled={!!user}
+          className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           <Save className="w-5 h-5" />
-          Create Free Account
+          {user ? "Saved!" : "Sign Up or Log In"}
         </button>
       </div>
 

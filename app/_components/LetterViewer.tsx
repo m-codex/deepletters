@@ -63,6 +63,12 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     checkUser();
   }, [loadLetter, supabaseClient.auth]);
 
+  useEffect(() => {
+    if (user && letter && !isSaved) {
+      handleSaveLetter();
+    }
+  }, [user, letter, isSaved]);
+
   const handleSaveLetter = async () => {
     if (!user || !letter) {
       // If user is not logged in, open the auth modal instead.
@@ -211,15 +217,15 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
             <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
               <h3 className="text-2xl font-bold text-primary mb-3">Save This Letter</h3>
               <p className="text-secondary mb-6">
-                {user ? "Add this letter to your collection." : "Create a free account to save this letter and manage all your received letters in one place."}
+                {user ? "This letter has been automatically saved to your dashboard." : "Create a free account or log in to save this letter and manage all your received letters in one place."}
               </p>
               <button
                 onClick={handleSaveLetter}
-                disabled={isSaved}
+                disabled={isSaved || !!user}
                 className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Save className="w-5 h-5" />
-                {isSaved ? 'Saved!' : user ? 'Save to My Dashboard' : 'Create Free Account to Save'}
+                {isSaved || user ? 'Saved!' : 'Sign Up or Log In'}
               </button>
             </div>
           </>

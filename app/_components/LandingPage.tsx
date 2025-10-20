@@ -3,10 +3,12 @@
 import { Mail, Music } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import AuthModal from './AuthModal';
 
 export default function LandingPage() {
   const router = useRouter();
   const [honeypot, setHoneypot] = useState('');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -63,9 +65,22 @@ export default function LandingPage() {
             </button>
           </div>
           <p className="mt-6 text-sm text-secondary">
-            Free to create • Shared via a private link
+            Already have an account?{' '}
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="text-btn-primary hover:underline"
+            >
+              Log in
+            </button>
           </p>
         </section>
+
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          title="Log In to Your Dashboard"
+          description="Enter your email to receive a magic link to access your dashboard."
+        />
 
         <section className="container mx-auto px-6 py-20">
           <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
