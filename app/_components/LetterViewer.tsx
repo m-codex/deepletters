@@ -75,7 +75,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     }
   }, [user, letter, isSaved, handleSaveLetter]);
 
-  const handleSaveLetter = async () => {
+  const handleSaveLetter = useCallback(async () => {
     if (!user || !letter) {
       setIsAuthModalOpen(true);
       return;
@@ -98,7 +98,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [user, letter, supabase]);
 
   useEffect(() => {
     if (musicAudioRef.current && typeof letter?.music_volume === 'number') {

@@ -347,7 +347,6 @@ export default function Dashboard() {
           onNewFolder={(folderName) => handleNewFolder(folderName, selectedLetter?.id || null)}
           onSubjectSave={handleSubjectSave}
           onFolderAssign={handleFolderAssign}
-          supabase={supabase}
         />
       )}
     </div>
