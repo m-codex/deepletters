@@ -44,13 +44,19 @@ export default function LetterPage({
 
   useEffect(() => {
     fetchData();
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         setUser(session.user);
+      } else {
+        setUser(null);
       }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    checkUser();
   }, [fetchData]);
 
   const shareUrl = letter

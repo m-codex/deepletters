@@ -54,13 +54,19 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   useEffect(() => {
     window.scrollTo(0, 0);
     loadLetter();
-    const checkUser = async () => {
-      const { data: { session } } = await supabaseClient.auth.getSession();
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
         setUser(session.user);
+      } else {
+        setUser(null);
       }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    checkUser();
   }, [loadLetter, supabaseClient.auth]);
 
   useEffect(() => {
