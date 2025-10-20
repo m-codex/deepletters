@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Music, Check } from 'lucide-react';
-import { supabase } from '@/_lib/supabase';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
+import { useSupabase } from '../SupabaseProvider';
 
 type MusicTrack = {
   name: string;
@@ -20,6 +20,7 @@ type MusicCategory = {
 export default function MusicStep() {
   const router = useRouter();
   const { letterData, updateLetterData } = useLetterData();
+  const supabase = useSupabase();
   const [musicCategories, setMusicCategories] = useState<MusicCategory[]>([]);
   const [selectedMusicUrl, setSelectedMusicUrl] = useState<string | null>(letterData.musicUrl);
   const [loading, setLoading] = useState(true);

@@ -53,7 +53,7 @@ export default function LetterDetailModal({
       };
       fetchInitialFolder();
     }
-  }, [letter]);
+  }, [letter, supabase]);
 
   if (!isOpen || !letter || !user) return null;
 

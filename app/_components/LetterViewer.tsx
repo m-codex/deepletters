@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Letter } from '@/_lib/supabase';
-import { Mail, Volume2, VolumeX, Save, LayoutDashboard } from 'lucide-react';
+import { Mail, Volume2, VolumeX, Save, LayoutDashboard, Loader2 } from 'lucide-react';
 import AuthModal from './AuthModal';
 import type { User } from '@supabase/supabase-js';
 import { useSupabase } from './SupabaseProvider';
@@ -49,7 +49,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     } finally {
       setLoading(false);
     }
-  }, [shareCode]);
+  }, [shareCode, supabase]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -73,7 +73,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     if (user && letter && !isSaved) {
       handleSaveLetter();
     }
-  }, [user, letter, isSaved]);
+  }, [user, letter, isSaved, handleSaveLetter]);
 
   const handleSaveLetter = async () => {
     if (!user || !letter) {

@@ -42,7 +42,7 @@ export default function LetterPage({
     } finally {
       setLoading(false);
     }
-  }, [managementToken]);
+  }, [managementToken, supabase]);
 
   useEffect(() => {
     fetchData();
@@ -59,7 +59,7 @@ export default function LetterPage({
     return () => {
       subscription.unsubscribe();
     };
-  }, [fetchData]);
+  }, [fetchData, supabase.auth]);
 
   const shareUrl = letter
     ? `${window.location.origin}/letter/${letter.share_code}`
