@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Share2, Copy, Check, Loader2, Eye, Mail, Save } from 'lucide-react';
+import { Share2, Copy, Check, Loader2, Eye, Mail, Save, LayoutDashboard } from 'lucide-react';
 import { Letter } from '@/_lib/supabase';
 import AuthModal from './AuthModal';
 import { createBrowserClient } from '@supabase/ssr';
@@ -151,14 +151,23 @@ export default function LetterPage({
         <p className="text-secondary mb-6">
           {user ? "This letter is saved to your dashboard because you are the sender." : "Create a free account or log in to save this letter and manage all your correspondence in one place."}
         </p>
-        <button
-          onClick={() => setIsAuthModalOpen(true)}
-          disabled={!!user}
-          className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          <Save className="w-5 h-5" />
-          {user ? "Saved!" : "Sign Up or Log In"}
-        </button>
+        {user ? (
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Go to Dashboard
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          >
+            <Save className="w-5 h-5" />
+            Sign Up or Log In
+          </button>
+        )}
       </div>
 
       <button

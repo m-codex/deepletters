@@ -77,6 +77,7 @@ export default function PreviewStep() {
 
       localStorage.removeItem("unfinalizedShareCode");
       localStorage.setItem("lastFinalizedShareCode", letterData.shareCode);
+      updateLetterData({ shareCode: null });
       router.replace(`/manage/${managementToken}`);
     } catch (error) {
       console.error("Error finalizing letter:", error);

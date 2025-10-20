@@ -116,15 +116,7 @@ export default function WriteStep() {
 
       // Clear local storage and reset state
       localStorage.removeItem('unfinalizedShareCode');
-      updateLetterData({
-        shareCode: null,
-        content: '',
-        senderName: '',
-        musicUrl: null,
-        musicVolume: 0.5,
-        finalized_at: null,
-        management_token: null,
-      });
+      updateLetterData({ shareCode: null });
       router.replace('/');
 
     } catch (error) {

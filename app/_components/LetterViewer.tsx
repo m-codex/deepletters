@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase, Letter } from '@/_lib/supabase';
-import { Mail, Volume2, VolumeX, Save } from 'lucide-react';
+import { Mail, Volume2, VolumeX, Save, LayoutDashboard } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { createBrowserClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
@@ -21,6 +22,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const musicAudioRef = useRef<HTMLAudioElement | null>(null);
+  const router = useRouter();
 
   const loadLetter = useCallback(async () => {
     try {
@@ -225,14 +227,23 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
               <p className="text-secondary mb-6">
                 {user ? "This letter has been automatically saved to your dashboard." : "Create a free account or log in to save this letter and manage all your received letters in one place."}
               </p>
-              <button
-                onClick={handleSaveLetter}
-                disabled={isSaved || !!user}
-                className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <Save className="w-5 h-5" />
-                {isSaved || user ? 'Saved!' : 'Sign Up or Log In'}
-              </button>
+              {user ? (
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  Go to Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={handleSaveLetter}
+                  className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+                >
+                  <Save className="w-5 h-5" />
+                  Sign Up or Log In
+                </button>
+              )}
             </div>
           </>
         )}

@@ -73,7 +73,14 @@ export const LetterProvider = ({ children, shareCode, supabase }: { children: Re
   }, [letterData]);
 
   const updateLetterData = useCallback((data: Partial<LetterData>) => {
-    setLetterData((prev) => ({ ...prev, ...data }));
+    if (data.shareCode === null) {
+      // If we are explicitly clearing the letter (e.g., discarding or finalizing),
+      // remove it from local storage and reset the state to initial.
+      localStorage.removeItem('letterData');
+      setLetterData(initialLetterData);
+    } else {
+      setLetterData((prev) => ({ ...prev, ...data }));
+    }
   }, []);
 
   return (
