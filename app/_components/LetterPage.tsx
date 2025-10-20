@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Share2, Copy, Check, Loader2, Eye, Mail, Save } from 'lucide-react';
-import { supabase, Letter } from '@/_lib/supabase';
+import { Letter } from '@/_lib/supabase';
 import AuthModal from './AuthModal';
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function LetterPage({
   managementToken,
@@ -17,6 +18,10 @@ export default function LetterPage({
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const fetchData = useCallback(async () => {
     try {
