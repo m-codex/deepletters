@@ -117,7 +117,6 @@ export default function WriteStep() {
       // Clear local storage and reset state
       localStorage.removeItem('unfinalizedShareCode');
       localStorage.removeItem('letterData');
-      localStorage.removeItem('senderName');
       localStorage.removeItem('temp_id');
       updateLetterData({
         shareCode: null,
@@ -142,16 +141,15 @@ export default function WriteStep() {
   };
 
   return (
-    <StepWrapper
-      title="Write Your Letter"
-      description="Express your feelings, share your thoughts, or simply say hello"
-      icon={<PenLine className="w-8 h-8 text-btn-primary" />}
-      buttonText={isSaving ? 'Saving...' : 'Next Step'}
-      onNext={handleNext}
-      isNextDisabled={!content.trim() || isSaving}
-    >
-
-      <div className={`theme-${letterData.theme}`}>
+    <div className={`theme-${letterData.theme}`}>
+      <StepWrapper
+        title="Write Your Letter"
+        description="Express your feelings, share your thoughts, or simply say hello"
+        icon={<PenLine className="w-8 h-8 text-btn-primary" />}
+        buttonText={isSaving ? 'Saving...' : 'Next Step'}
+        onNext={handleNext}
+        isNextDisabled={!content.trim() || isSaving}
+      >
         <div className="bg-secondary-bg shadow-xl px-4 py-8 md:p-12 relative">
           {!isNameSet ? (
             <form
@@ -252,9 +250,7 @@ export default function WriteStep() {
             </>
           )}
         </div>
-      </div>
-
-        
-    </StepWrapper>
+      </StepWrapper>
+    </div>
   );
 }
