@@ -51,30 +51,6 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
     }
   }, [shareCode, supabase]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    loadLetter();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [loadLetter, supabase.auth]);
-
-  useEffect(() => {
-    if (user && letter && !isSaved) {
-      handleSaveLetter();
-    }
-  }, [user, letter, isSaved, handleSaveLetter]);
-
   const handleSaveLetter = useCallback(async () => {
     if (!user || !letter) {
       setIsAuthModalOpen(true);
@@ -99,6 +75,30 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
       setIsSaving(false);
     }
   }, [user, letter, supabase]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadLetter();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadLetter, supabase.auth]);
+
+  useEffect(() => {
+    if (user && letter && !isSaved) {
+      handleSaveLetter();
+    }
+  }, [user, letter, isSaved, handleSaveLetter]);
 
   useEffect(() => {
     if (musicAudioRef.current && typeof letter?.music_volume === 'number') {
