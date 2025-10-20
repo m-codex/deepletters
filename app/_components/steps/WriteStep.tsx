@@ -20,6 +20,7 @@ export default function WriteStep() {
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
   const [isRecipientNameSet, setIsRecipientNameSet] = useState(!!letterData.recipientName);
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingRecipientName, setIsEditingRecipientName] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
@@ -73,17 +74,30 @@ export default function WriteStep() {
   }, [updateLetterData, supabase.auth]);
 
   const handleNameSubmit = () => {
-    if (senderName.trim() && !isNameSet) {
+    if (senderName.trim() && recipientName.trim()) {
+      localStorage.setItem('senderName', senderName);
+      localStorage.setItem('recipientName', recipientName);
+      updateLetterData({ senderName, recipientName });
+      setIsNameSet(true);
+      setIsRecipientNameSet(true);
+      setIsEditingName(false);
+    }
+  };
+
+  const handleSenderNameSubmit = () => {
+    if (senderName.trim()) {
       localStorage.setItem('senderName', senderName);
       updateLetterData({ senderName });
-      setIsNameSet(true);
+      setIsEditingName(false);
     }
-    if (recipientName.trim() && isNameSet) {
+  };
+
+  const handleRecipientNameSubmit = () => {
+    if (recipientName.trim()) {
       localStorage.setItem('recipientName', recipientName);
       updateLetterData({ recipientName });
-      setIsRecipientNameSet(true);
+      setIsEditingRecipientName(false);
     }
-    setIsEditingName(false);
   };
 
   const handleSave = async () => {
@@ -179,71 +193,83 @@ export default function WriteStep() {
             }}
             className="mb-6"
           >
-            {!isNameSet && (
-              <div className="mb-4">
-                <label htmlFor="senderName" className="block text-sm text-secondary mb-2">
-                  Your Name
-                </label>
-                <input
-                  id="senderName"
-                  type="text"
-                  value={senderName}
-                  onChange={(e) => setSenderName(e.target.value)}
-                  placeholder="Name"
-                  className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
-                />
-              </div>
-            )}
-            {isNameSet && !isRecipientNameSet && (
-              <div className="mb-4">
-                <label htmlFor="recipientName" className="block text-sm text-secondary mb-2">
-                  Recipient&apos;s Name
-                </label>
-                <input
-                  id="recipientName"
-                  type="text"
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
-                  placeholder="Name"
-                  className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
-                />
-              </div>
-            )}
+            <div className="mb-4">
+              <label htmlFor="senderName" className="block text-sm text-secondary mb-2">
+                Your Name
+              </label>
+              <input
+                id="senderName"
+                type="text"
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
+                placeholder="Name"
+                className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="recipientName" className="block text-sm text-secondary mb-2">
+                Recipient&apos;s Name
+              </label>
+              <input
+                id="recipientName"
+                type="text"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Name"
+                className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+              />
+            </div>
             <button
               type="submit"
               className="mt-4 px-6 py-2 bg-btn-primary text-white rounded hover:bg-btn-hover"
             >
-              Save Name
+              Save Names
             </button>
           </form>
         ) : (
             <>
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-2">
-                  {isEditingName ? (
-                    <input
-                      type="text"
-                      value={senderName}
-                      onChange={(e) => setSenderName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleNameSubmit();
-                        }
-                      }}
-                      onBlur={handleNameSubmit}
-                      autoFocus
-                      className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
-                    />
-                  ) : (
-                    <div>
+                  <div>
+                    {isEditingName ? (
+                      <input
+                        type="text"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSenderNameSubmit();
+                          }
+                        }}
+                        onBlur={handleSenderNameSubmit}
+                        autoFocus
+                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                      />
+                    ) : (
                       <p className="text-primary" onClick={() => setIsEditingName(true)}>
                         From: <span className="cursor-pointer">{senderName}</span>
                       </p>
-                      <p className="text-primary">
+                    )}
+                    {isEditingRecipientName ? (
+                      <input
+                        type="text"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleRecipientNameSubmit();
+                          }
+                        }}
+                        onBlur={handleRecipientNameSubmit}
+                        autoFocus
+                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                      />
+                    ) : (
+                      <p className="text-primary" onClick={() => setIsEditingRecipientName(true)}>
                         To: <span className="cursor-pointer">{recipientName}</span>
                       </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <div className="flex gap-4">
                     {letterData.shareCode && (
                       <button
