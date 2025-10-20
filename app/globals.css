@@ -3,6 +3,31 @@
 @tailwind utilities;
 
 @layer base {
+  :root,
+  :host {
+    --color-primary-bg: #262626;
+    --color-secondary-bg: #363636;
+    --color-primary: #F0EEED;
+    --color-secondary: #b3b3b3;
+    --color-white: #FFFFFF;
+    --color-btn-primary: #af9888;
+    --color-btn-hover: #998578;
+    --color-btn-secondary: #E3DFDC;
+    --color-btn-secondary-text: #262626;
+  }
+
+  .theme-light {
+    --color-primary-bg: #F0EEED;
+    --color-secondary-bg: #FFFFFF;
+    --color-primary: #262626;
+    --color-secondary: #5A5A5A;
+    --color-white: #FFFFFF;
+    --color-btn-primary: #af9888;
+    --color-btn-hover: #998578;
+    --color-btn-secondary: #E3DFDC;
+    --color-btn-secondary-text: #262626;
+  }
+
   @font-face {
     font-family: "Quattrocento-Bold";
     src: url("/fonts/Quattrocento-Bold.ttf") format("truetype");

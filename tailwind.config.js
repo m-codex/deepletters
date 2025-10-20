@@ -15,20 +15,15 @@ export default {
       
       // --- Custom Colors ---
       colors: {
-        // Background Colors
-        'primary-bg': '#262626', 
-        'secondary-bg': '#363636', 
-        
-        // Text Colors
-        'primary': '#F0EEED',  
-        'secondary': '#b3b3b3',
-        'white': '#FFFFFF',    
-
-        // Button Colors
-        'btn-primary': '#af9888', // #AF9888  
-        'btn-hover': '#998578',     
-        'btn-secondary': '#E3DFDC', 
-        'btn-secondary-text': '#262626', 
+        'primary-bg': 'var(--color-primary-bg)',
+        'secondary-bg': 'var(--color-secondary-bg)',
+        'primary': 'var(--color-primary)',
+        'secondary': 'var(--color-secondary)',
+        'white': 'var(--color-white)',
+        'btn-primary': 'var(--color-btn-primary)',
+        'btn-hover': 'var(--color-btn-hover)',
+        'btn-secondary': 'var(--color-btn-secondary)',
+        'btn-secondary-text': 'var(--color-btn-secondary-text)',
       },
     },
   },

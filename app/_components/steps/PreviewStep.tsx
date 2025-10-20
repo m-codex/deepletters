@@ -76,6 +76,8 @@ export default function PreviewStep() {
       }
 
       localStorage.removeItem("unfinalizedShareCode");
+      localStorage.removeItem("letterData");
+      localStorage.removeItem("senderName");
       localStorage.setItem("lastFinalizedShareCode", letterData.shareCode);
       router.replace(`/manage/${managementToken}`);
     } catch (error) {
