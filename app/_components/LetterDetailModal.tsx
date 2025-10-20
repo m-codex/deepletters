@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/_lib/supabase';
 import { X, Save } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
+import type { User, SupabaseClient } from '@supabase/supabase-js';
 import { LetterWithSubject } from '@/_lib/supabase';
 
 interface LetterDetailModalProps {
@@ -16,6 +15,7 @@ interface LetterDetailModalProps {
   onNewFolder: (folderName: string) => Promise<{ id: string; name: string } | null>;
   onSubjectSave: (letterId: string, subject: string, userId: string) => Promise<void>;
   onFolderAssign: (letterId: string, folderId: string | null) => Promise<void>;
+  supabase: SupabaseClient;
 }
 
 export default function LetterDetailModal({
@@ -28,6 +28,7 @@ export default function LetterDetailModal({
   onNewFolder,
   onSubjectSave,
   onFolderAssign,
+  supabase,
 }: LetterDetailModalProps) {
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -40,7 +41,7 @@ export default function LetterDetailModal({
       setSubject(letter.user_subject || letter.subject || '');
       const fetchInitialFolder = async () => {
         const { data } = await supabase
-          .from('letter_folders')
+          .from('folder_letters')
           .select('folder_id')
           .eq('letter_id', letter.id)
           .single();

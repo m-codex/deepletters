@@ -76,13 +76,13 @@ export default function Dashboard() {
   const handleFolderAssign = async (letterId: string, folderId: string | null) => {
     try {
       if (folderId) {
-        const { error } = await supabase.from('letter_folders').upsert({
+        const { error } = await supabase.from('folder_letters').upsert({
           letter_id: letterId,
           folder_id: folderId,
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('letter_folders').delete().match({ letter_id: letterId });
+        const { error } = await supabase.from('folder_letters').delete().match({ letter_id: letterId });
         if (error) throw error;
       }
       // Optionally, refetch data or update local state to reflect the change
@@ -109,15 +109,15 @@ export default function Dashboard() {
           if (error) throw error;
           lettersData = data || [];
         } else {
-          const { data: letterFolders, error: lfError } = await supabase
-            .from('letter_folders')
+          const { data: folderLetters, error: lfError } = await supabase
+            .from('folder_letters')
             .select('letter_id')
             .eq('folder_id', currentView);
 
           if (lfError) throw lfError;
 
-          if (letterFolders) {
-            const letterIds = letterFolders.map(lf => lf.letter_id);
+          if (folderLetters) {
+            const letterIds = folderLetters.map(lf => lf.letter_id);
             if (letterIds.length > 0) {
               const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
               const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
@@ -349,6 +349,7 @@ export default function Dashboard() {
           onNewFolder={(folderName) => handleNewFolder(folderName, selectedLetter?.id || null)}
           onSubjectSave={handleSubjectSave}
           onFolderAssign={handleFolderAssign}
+          supabase={supabase}
         />
       )}
     </div>
