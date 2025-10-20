@@ -40,8 +40,7 @@ export default function Dashboard() {
     router.push("/");
   };
 
-  const handleNewFolder = async () => {
-    const folderName = prompt("Enter a name for your new folder:");
+  const handleNewFolder = async (folderName: string, letterId: string | null = null) => {
     if (folderName && user) {
       try {
         const { data, error } = await supabase
@@ -49,14 +48,43 @@ export default function Dashboard() {
           .insert({ name: folderName, user_id: user.id })
           .select()
           .single();
+
         if (error) throw error;
+
         if (data) {
           setFolders((prev) => [...prev, data]);
+          if (letterId) {
+            await handleFolderAssign(letterId, data.id);
+          }
+          return data;
         }
       } catch (err) {
         console.error("Error creating folder:", err);
         alert("Could not create the folder. Please try again.");
       }
+    }
+    return null;
+  };
+
+  const handleFolderAssign = async (letterId: string, folderId: string | null) => {
+    try {
+      if (folderId) {
+        const { error } = await supabase.from('letter_folders').upsert({
+          letter_id: letterId,
+          folder_id: folderId,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('letter_folders').delete().match({ letter_id: letterId });
+        if (error) throw error;
+      }
+      // Optionally, refetch data or update local state to reflect the change
+      if (user) {
+        await fetchData(user, view);
+      }
+    } catch (err) {
+      console.error("Error assigning folder:", err);
+      alert("Could not assign the folder. Please try again.");
     }
   };
 
@@ -66,20 +94,38 @@ export default function Dashboard() {
       try {
         let lettersData: LetterWithSubject[] = [];
         if (currentView === "sent") {
-          const { data, error } = await supabase.rpc("get_letters_for_user", {
-            p_user_id: user.id,
-          });
+          const { data, error } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
           lettersData = data || [];
         } else if (currentView === "received") {
-          const { data, error } = await supabase.rpc(
-            "get_saved_letters_for_user",
-            { p_user_id: user.id },
-          );
+          const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
           lettersData = data || [];
         } else {
-          lettersData = [];
+          const { data: letterFolders, error: lfError } = await supabase
+            .from('letter_folders')
+            .select('letter_id')
+            .eq('folder_id', currentView);
+
+          if (lfError) throw lfError;
+
+          if (letterFolders) {
+            const letterIds = letterFolders.map(lf => lf.letter_id);
+            if (letterIds.length > 0) {
+              const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
+              const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
+
+              if (sentError) throw sentError;
+              if (receivedError) throw receivedError;
+
+              const allLetters = [...(sentLetters || []), ...(receivedLetters || [])];
+              const uniqueLetters = Array.from(new Map(allLetters.map(l => [l.id, l])).values());
+
+              lettersData = uniqueLetters.filter(l => letterIds.includes(l.id));
+            } else {
+              lettersData = [];
+            }
+          }
         }
         setLetters(lettersData);
 
@@ -195,33 +241,89 @@ export default function Dashboard() {
     </main>
   );
 
-  const LetterCard = ({ letter }: { letter: LetterWithSubject }) => (
-    <div
-      onClick={() => {
-        setSelectedLetter(letter);
-        setIsDetailModalOpen(true);
-      }}
-      className="bg-secondary-bg rounded-lg shadow-md p-4 flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer"
-    >
-      <div>
-        <h3 className="font-bold text-lg text-primary mb-2 truncate">{letter.user_subject || letter.subject || 'No Subject'}</h3>
-        <p className="text-sm text-secondary mb-4">To: {letter.recipient_name || 'Anonymous'}</p>
-        <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
+  const LetterCard = ({ letter }: { letter: LetterWithSubject }) => {
+    const [subject, setSubject] = useState(letter.user_subject || letter.subject || '');
+    const [isEditing, setIsEditing] = useState(false);
+
+    const onSubjectSave = async () => {
+      if (user) {
+        await handleSubjectSave(letter.id, subject, user.id);
+        setIsEditing(false);
+      }
+    };
+
+    return (
+      <div
+        className="bg-secondary-bg rounded-lg shadow-md p-4 flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer"
+      >
+        <div onClick={() => {
+          setSelectedLetter(letter);
+          setIsDetailModalOpen(true);
+        }}>
+          {isEditing ? (
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                className="flex-grow w-full px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md"
+              />
+              <button onClick={(e) => { e.stopPropagation(); onSubjectSave(); }} className="px-2 py-1 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Save</button>
+            </div>
+          ) : (
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-bold text-lg text-primary truncate pr-2">{subject || 'No Subject'}</h3>
+              <button onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} className="p-1 text-secondary hover:text-primary">
+                <Edit className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          <p className="text-sm text-secondary mb-4">To: {letter.recipient_name || 'Anonymous'}</p>
+          <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
+        </div>
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-xs text-gray-400">
+            {new Date(letter.created_at).toLocaleDateString()}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/letter/${letter.share_code}`);
+            }}
+            className="text-xs bg-btn-secondary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+          >
+            View Letter
+          </button>
+        </div>
       </div>
-      <div className="text-xs text-gray-400 mt-4">
-        {new Date(letter.created_at).toLocaleDateString()}
-      </div>
-    </div>
-  );
+    );
+  };
+
 
   const handleSubjectUpdate = (letterId: string, newSubject: string) => {
     setLetters(prevLetters =>
       prevLetters.map(l =>
-        l.id === letterId ? { ...l, user_subject: newSubject } : l
+        l.id === letterId ? { ...l, user_subject: newSubject, subject: newSubject } : l
       )
     );
     if (selectedLetter && selectedLetter.id === letterId) {
-      setSelectedLetter(prev => prev ? { ...prev, user_subject: newSubject } : null);
+      setSelectedLetter(prev => prev ? { ...prev, user_subject: newSubject, subject: newSubject } : null);
+    }
+  };
+
+  const handleSubjectSave = async (letterId: string, subject: string, userId: string) => {
+    try {
+      const { error } = await supabase.from('user_letter_subjects').upsert({
+        user_id: userId,
+        letter_id: letterId,
+        subject: subject,
+      });
+      if (error) throw error;
+      handleSubjectUpdate(letterId, subject);
+    } catch (err) {
+      console.error('Error saving subject:', err);
+      alert('Failed to save subject.');
     }
   };
 
@@ -229,13 +331,19 @@ export default function Dashboard() {
     <div className="flex min-h-screen">
       <Sidebar />
       <MainContent />
-      <LetterDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        letter={selectedLetter}
-        user={user}
-        onSubjectUpdate={handleSubjectUpdate}
-      />
+      {isDetailModalOpen && (
+        <LetterDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          letter={selectedLetter}
+          user={user}
+          onSubjectUpdate={handleSubjectUpdate}
+          folders={folders}
+          onNewFolder={(folderName) => handleNewFolder(folderName, selectedLetter?.id || null)}
+          onSubjectSave={handleSubjectSave}
+          onFolderAssign={handleFolderAssign}
+        />
+      )}
     </div>
   );
 }
