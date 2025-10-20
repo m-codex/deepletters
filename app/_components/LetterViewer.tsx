@@ -220,6 +220,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
           </>
         )}
       </div>
+    </div>
 
       <AuthModal
         isOpen={isAuthModalOpen}
