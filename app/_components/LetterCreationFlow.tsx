@@ -4,6 +4,7 @@ import { usePathname, useParams, useRouter } from 'next/navigation';
 import { LetterProvider } from './LetterContext';
 import { useLetterData } from './useLetterData';
 import { useLayoutEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
 function LetterCreationLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -63,8 +64,12 @@ function LetterCreationLayout({ children }: { children: React.ReactNode }) {
 
 export default function LetterCreationFlow({ children }: { children: React.ReactNode }) {
   const { shareCode } = useParams<{ shareCode?: string }>();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   return (
-    <LetterProvider shareCode={shareCode}>
+    <LetterProvider shareCode={shareCode} supabase={supabase}>
       <LetterCreationLayout>{children}</LetterCreationLayout>
     </LetterProvider>
   );

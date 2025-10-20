@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const [view, setView] = useState<View>("sent");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedFolderName, setSelectedFolderName] = useState<string | null>(null);
   const [selectedLetter, setSelectedLetter] =
     useState<LetterWithSubject | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -193,10 +194,10 @@ export default function Dashboard() {
           <Plus className="w-6 h-6" /> {isSidebarOpen && 'New Letter'}
         </button>
         <nav className="space-y-2">
-          <button onClick={() => setView('sent')} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Send className="w-5 h-5" /> {isSidebarOpen && 'Sent'}
           </button>
-          <button onClick={() => setView('received')} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
           </button>
           <div className="pt-4">
@@ -210,7 +211,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-1">
               {folders.map(folder => (
-                <button key={folder.id} onClick={() => setView(folder.id)} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+                <button key={folder.id} onClick={() => { setView(folder.id); setSelectedFolderName(folder.name); }} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
                   <Folder className="w-5 h-5" /> {isSidebarOpen && <span className="truncate">{folder.name}</span>}
                 </button>
               ))}
@@ -229,7 +230,7 @@ export default function Dashboard() {
   const MainContent = () => (
     <main className="flex-1 p-8 bg-primary-bg">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-primary capitalize">{view}</h1>
+        <h1 className="text-3xl font-bold text-primary capitalize">{selectedFolderName || view}</h1>
         <div>
           {/* Action buttons like 'New Folder' can go here */}
         </div>
