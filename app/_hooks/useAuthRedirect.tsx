@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const TEMP_ID_STORAGE_KEY = "tempId";
+const TEMP_ID_STORAGE_KEY = "temp_id";
 
 export function useAuthRedirect(shareCode?: string) {
   const [redirectTo, setRedirectTo] = useState<string | null>(null);

@@ -74,10 +74,11 @@ export default function PreviewStep() {
 
       if (error) throw error;
       if (data.temp_id) {
-        localStorage.setItem("tempId", data.temp_id);
+        localStorage.setItem("temp_id", data.temp_id);
       }
 
       localStorage.removeItem("unfinalizedShareCode");
+      localStorage.removeItem("letterData");
       localStorage.setItem("lastFinalizedShareCode", letterData.shareCode);
       updateLetterData({ shareCode: null });
       router.replace(`/manage/${managementToken}`);

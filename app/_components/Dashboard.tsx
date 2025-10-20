@@ -154,8 +154,8 @@ export default function Dashboard() {
   useEffect(() => {
     const initDashboard = async () => {
       // Clear the temp_id from localStorage if it exists
-      if (localStorage.getItem("tempId")) {
-        localStorage.removeItem("tempId");
+      if (localStorage.getItem("temp_id")) {
+        localStorage.removeItem("temp_id");
       }
 
       const {
