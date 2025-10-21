@@ -132,6 +132,7 @@ export default function Dashboard() {
             }
           }
         }
+        lettersData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setLetters(lettersData);
 
         const { data: folderData, error: folderError } = await supabase
@@ -247,66 +248,24 @@ export default function Dashboard() {
   );
 
   const LetterCard = ({ letter }: { letter: LetterWithSubject }) => {
-    const [subject, setSubject] = useState(letter.user_subject || letter.subject || '');
-    const [recipientName, setRecipientName] = useState(letter.recipient_name || '');
-    const [isEditing, setIsEditing] = useState(false);
-    const [isEditingRecipient, setIsEditingRecipient] = useState(false);
-
-    const onSubjectSave = async () => {
-      if (user) {
-        await handleSubjectSave(letter.id, subject, user.id);
-        setIsEditing(false);
-      }
-    };
-
-    const onRecipientNameSave = async () => {
-      if (user) {
-        await handleRecipientNameSave(letter.id, recipientName);
-        setIsEditingRecipient(false);
-      }
-    };
-
     return (
       <div
         className="bg-secondary-bg rounded-lg shadow-md p-4 flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer"
-      >
-        <div onClick={() => {
+        onClick={() => {
           setSelectedLetter(letter);
           setIsDetailModalOpen(true);
-        }}>
-          {isEditing ? (
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="flex-grow w-full px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md"
-              />
-              <button onClick={(e) => { e.stopPropagation(); onSubjectSave(); }} className="px-2 py-1 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Save</button>
-            </div>
-          ) : (
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="font-bold text-lg text-primary truncate pr-2">{subject || 'No Subject'}</h3>
-              <button onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} className="p-1 text-secondary hover:text-primary">
-                <Pencil className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {isEditingRecipient ? (
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="flex-grow w-full px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md"
-              />
-              <button onClick={(e) => { e.stopPropagation(); onRecipientNameSave(); }} className="px-2 py-1 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Save</button>
-            </div>
-          ) : (
-            <p className="text-sm text-secondary mb-4" onClick={(e) => { e.stopPropagation(); setIsEditingRecipient(true); }}>To: {recipientName || 'Anonymous'}</p>
-          )}
+        }}
+      >
+        <div>
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-bold text-lg text-primary truncate pr-2">
+              {letter.user_subject || letter.subject || 'No Subject'}
+            </h3>
+            <Pencil className="w-4 h-4 text-secondary" />
+          </div>
+          <p className="text-sm text-secondary mb-4">
+            To: {letter.recipient_name || 'Anonymous'}
+          </p>
           <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
         </div>
         <div className="flex justify-between items-center mt-4">
