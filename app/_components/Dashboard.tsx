@@ -229,10 +229,11 @@ export default function Dashboard() {
               const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
               if (error) throw error;
               localStorage.removeItem('lastFinalizedShareCode');
-              // Refetch data to show the newly claimed letter
-              fetchData(user, view);
             } catch (error) {
               console.error('Error claiming letter:', error);
+            } finally {
+              // Always refetch data after attempting to claim, to ensure UI is up to date
+              fetchData(user, view);
             }
           };
           claimLetter();
