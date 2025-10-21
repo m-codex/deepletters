@@ -135,7 +135,7 @@ export default function LetterDetailModal({
                 <option key={folder.id} value={folder.id}>{folder.name}</option>
               ))}
             </select>
-            <button onClick={() => setIsCreatingFolder(true)} className="p-2 bg-btn-secondary text-primary-bg rounded-md hover:bg-btn-hover">
+            <button onClick={() => setIsCreatingFolder(true)} className="p-2  text-btn-primary rounded-md">
               <Plus className="w-5 h-5" />
             </button>
           </div>
