@@ -25,31 +25,24 @@ export default function WriteStep() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   useEffect(() => {
-    setSenderName(letterData.senderName);
-    setRecipientName(letterData.recipientName);
-
-    if (letterData.senderName) {
-      setIsNameSet(true);
-    } else {
-      const storedSenderName = localStorage.getItem('senderName');
-      if (storedSenderName) {
-        setSenderName(storedSenderName);
-        setIsNameSet(true);
-      } else {
-        setIsNameSet(false);
-      }
+    // Pre-fill sender name from localStorage as a default.
+    const storedSenderName = localStorage.getItem('senderName');
+    if (storedSenderName) {
+      setSenderName(storedSenderName);
     }
 
-    if (letterData.recipientName) {
+    // If there's data from the context (i.e., an active draft), use that.
+    // The visibility of the form is also controlled by the context data.
+    if (letterData.senderName && letterData.recipientName) {
+      setSenderName(letterData.senderName);
+      setRecipientName(letterData.recipientName);
+      setIsNameSet(true);
       setIsRecipientNameSet(true);
     } else {
-      const storedRecipientName = localStorage.getItem('recipientName');
-      if (storedRecipientName) {
-        setRecipientName(storedRecipientName);
-        setIsRecipientNameSet(true);
-      } else {
-        setIsRecipientNameSet(false);
-      }
+      // For a new letter, recipient name should be blank, and form should be visible.
+      setRecipientName('');
+      setIsNameSet(false);
+      setIsRecipientNameSet(false);
     }
   }, [letterData]);
 
@@ -149,22 +142,22 @@ export default function WriteStep() {
   };
 
   const handleDiscard = async () => {
-    if (!letterData.shareCode) return;
+    if (!letterData.shareCode) {
+      // If there's no share code, just clear the form.
+      updateLetterData({ shareCode: null, content: '', recipientName: '' });
+      return;
+    }
 
     const confirmed = window.confirm('Are you sure you want to discard this draft? This action cannot be undone.');
     if (!confirmed) return;
 
     try {
-      // Only delete the record from the database.
-      // No need to delete from storage as nothing is uploaded until finalization.
       const { error: dbError } = await supabase.from('letters').delete().eq('share_code', letterData.shareCode);
       if (dbError) throw dbError;
 
-      // Clear local storage and reset state
       localStorage.removeItem('unfinalizedShareCode');
-      updateLetterData({ shareCode: null });
-      router.replace('/');
-
+      // This will trigger the useEffect to reset the component state.
+      updateLetterData({ shareCode: null, content: '', recipientName: '' });
     } catch (error) {
       console.error('Error discarding draft:', error);
       alert('Could not discard the draft. Please try again.');
