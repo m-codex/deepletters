@@ -10,6 +10,7 @@ export type Letter = {
   created_at: string;
   view_count: number;
   finalized_at: string | null;
+  status: 'draft' | 'finalized';
 };
 
 export interface LetterWithSubject extends Letter {
