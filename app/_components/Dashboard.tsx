@@ -292,12 +292,6 @@ export default function Dashboard() {
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder()}
               />
-              <button onClick={handleRenameFolder} className="p-1 text-green-500 hover:text-green-700">
-                <Check className="w-6 h-6" />
-              </button>
-              <button onClick={() => setEditingFolderId(null)} className="p-1 text-red-500 hover:text-red-700">
-                <X className="w-6 h-6" />
-              </button>
             </div>
           ) : (
             <h1
@@ -317,7 +311,7 @@ export default function Dashboard() {
             {editingFolderId === view && (
               <button
                 onClick={() => handleDeleteFolder(editingFolderId)}
-                className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 flex items-center gap-2"
+                className="bg-btn-secondary text-primary-bg font-bold py-2 px-4 rounded-lg flex items-center gap-2"
               >
                 <Trash2 className="w-5 h-5" /> Delete Folder
               </button>
