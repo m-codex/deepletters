@@ -226,14 +226,17 @@ export default function Dashboard() {
         if (shareCodeToClaim) {
           const claimLetter = async () => {
             try {
-              const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
+              const { data, error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
               if (error) throw error;
+
+              if (data && data.length > 0) {
+                const claimedLetter = data[0];
+                setLetters(prevLetters => [claimedLetter, ...prevLetters]);
+              }
+
               localStorage.removeItem('lastFinalizedShareCode');
             } catch (error) {
               console.error('Error claiming letter:', error);
-            } finally {
-              // Always refetch data after attempting to claim, to ensure UI is up to date
-              fetchData(user, view);
             }
           };
           claimLetter();
