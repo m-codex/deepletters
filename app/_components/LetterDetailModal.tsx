@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, Save, Eye } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { LetterWithSubject } from '@/_lib/supabase';
 import { useSupabase } from './SupabaseProvider';
@@ -30,6 +31,7 @@ export default function LetterDetailModal({
   onFolderAssign,
 }: LetterDetailModalProps) {
   const supabase = useSupabase();
+  const router = useRouter();
   const [subject, setSubject] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -153,6 +155,16 @@ export default function LetterDetailModal({
 
         <div className="flex-grow overflow-y-auto p-6 bg-primary-bg rounded-md">
           <p className="whitespace-pre-wrap font-serif text-lg text-primary">{letter.content}</p>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-4">
+          <button
+            onClick={() => router.push(`/letter/${letter.share_code}`)}
+            className="px-6 py-2 bg-btn-secondary text-white rounded-md hover:bg-btn-hover flex items-center gap-2"
+          >
+            <Eye className="w-5 h-5" />
+            View Letter
+          </button>
         </div>
       </div>
       <style jsx>{`
