@@ -1,0 +1,2 @@
+ALTER TABLE letters
+ADD COLUMN status TEXT NOT NULL DEFAULT 'draft';

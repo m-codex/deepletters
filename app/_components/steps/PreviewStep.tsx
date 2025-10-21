@@ -46,45 +46,57 @@ export default function PreviewStep() {
   };
 
   const handleFinalize = async () => {
-    if (!letterData.shareCode) {
-      alert("Cannot finalize without a share code.");
-      return;
-    }
     setIsLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    const finalizedAt = new Date().toISOString();
+    const managementToken = shortUUID.generate();
+    const shareCode = letterData.shareCode || shortUUID.generate();
 
     try {
-      const finalizedAt = new Date().toISOString();
-      const managementToken = shortUUID.generate();
-
-      const updateData: Partial<Letter> = {
-        content: letterData.content,
-        finalized_at: finalizedAt,
-        management_token: managementToken,
-        theme: letterData.theme,
-        music_url: letterData.musicUrl,
-        music_volume: letterData.musicVolume,
-      };
-
-      const { data, error } = await supabase
-        .from("letters")
-        .update(updateData)
-        .eq("share_code", letterData.shareCode)
-        .select("temp_id")
-        .single();
-
-      if (error) throw error;
-      if (data.temp_id) {
-        localStorage.setItem("temp_id", data.temp_id);
+      if (user && letterData.id) {
+        // Logged-in user: Update the existing draft to finalized
+        const { error } = await supabase
+          .from('letters')
+          .update({
+            status: 'finalized',
+            finalized_at: finalizedAt,
+            management_token: managementToken,
+            share_code: shareCode,
+          })
+          .eq('id', letterData.id);
+        if (error) throw error;
+      } else {
+        // Anonymous user: Insert a new finalized letter
+        const { data, error } = await supabase
+          .from('letters')
+          .insert({
+            content: letterData.content,
+            sender_name: letterData.senderName,
+            recipient_name: letterData.recipientName,
+            theme: letterData.theme,
+            music_url: letterData.musicUrl,
+            music_volume: letterData.musicVolume,
+            status: 'finalized',
+            finalized_at: finalizedAt,
+            management_token: managementToken,
+            share_code: shareCode,
+            temp_id: localStorage.getItem('temp_id'),
+          })
+          .select('temp_id')
+          .single();
+        if (error) throw error;
+        if (data?.temp_id) {
+          localStorage.setItem('temp_id', data.temp_id);
+        }
       }
 
-      localStorage.removeItem("unfinalizedShareCode");
-      localStorage.removeItem("letterData");
-      localStorage.setItem("lastFinalizedShareCode", letterData.shareCode);
+      localStorage.removeItem('letterData');
+      localStorage.setItem('lastFinalizedShareCode', shareCode);
       updateLetterData({ shareCode: null });
       router.replace(`/manage/${managementToken}`);
     } catch (error) {
-      console.error("Error finalizing letter:", error);
-      alert("Could not finalize your letter. Please try again.");
+      console.error('Error finalizing letter:', error);
+      alert('Could not finalize your letter. Please try again.');
       setIsLoading(false);
     }
   };

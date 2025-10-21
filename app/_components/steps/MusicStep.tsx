@@ -24,6 +24,7 @@ export default function MusicStep() {
   const [musicCategories, setMusicCategories] = useState<MusicCategory[]>([]);
   const [selectedMusicUrl, setSelectedMusicUrl] = useState<string | null>(letterData.musicUrl);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   const loadMusicFromStorage = useCallback(async () => {
     const { data: folders, error: foldersError } = await supabase.storage
@@ -84,11 +85,39 @@ export default function MusicStep() {
   }, [supabase]);
 
   useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+      }
+    };
+    checkUser();
     loadMusicFromStorage();
-  }, [loadMusicFromStorage]);
+  }, [loadMusicFromStorage, supabase.auth]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     updateLetterData({ musicUrl: selectedMusicUrl });
+
+    if (user && letterData.id) {
+      // Logged-in user: update the draft in the database
+      const { error } = await supabase
+        .from('letters')
+        .update({ music_url: selectedMusicUrl })
+        .eq('id', letterData.id);
+
+      if (error) {
+        console.error('Error updating music selection:', error);
+        // Optionally, show an error message to the user
+      }
+    } else {
+      // Anonymous user: save to localStorage
+      const letterToSave = {
+        ...letterData,
+        musicUrl: selectedMusicUrl,
+      };
+      localStorage.setItem('letterData', JSON.stringify(letterToSave));
+    }
+
     router.push('/create/preview');
   };
 

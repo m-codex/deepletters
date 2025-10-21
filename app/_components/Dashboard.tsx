@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import { Letter, LetterWithSubject } from "@/_lib/supabase";
 import LetterDetailModal from "./LetterDetailModal";
-type View = "sent" | "received" | string;
+import { useLetterData } from "./useLetterData";
+type View = "sent" | "received" | "drafts" | string;
 
 export default function Dashboard() {
   const supabase = useSupabase();
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editingFolderName, setEditingFolderName] = useState<string>("");
+  const { updateLetterData } = useLetterData();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -156,6 +158,14 @@ export default function Dashboard() {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
           lettersData = data || [];
+        } else if (currentView === "drafts") {
+          const { data, error } = await supabase
+            .from('letters')
+            .select('*')
+            .eq('sender_id', user.id)
+            .eq('status', 'draft');
+          if (error) throw error;
+          lettersData = data || [];
         } else {
           const { data: folderLetters, error: lfError } = await supabase
             .from('folder_letters')
@@ -248,6 +258,9 @@ export default function Dashboard() {
           <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
           </button>
+          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+            <Pencil className="w-5 h-5" /> {isSidebarOpen && 'Drafts'}
+          </button>
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
               <p className={`text-sm font-semibold text-secondary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</p>
@@ -334,20 +347,51 @@ export default function Dashboard() {
   }
 
   const LetterCard = ({ letter }: { letter: LetterWithSubject }) => {
+    const isDraft = letter.status === 'draft';
+
+    const handleContinueDraft = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      updateLetterData({
+        id: letter.id,
+        content: letter.content || '',
+        senderName: letter.sender_name || '',
+        recipientName: letter.recipient_name || '',
+        musicUrl: letter.music_url || null,
+        theme: letter.theme || 'light',
+      });
+      router.push('/create/write');
+    };
+
+    const handleDeleteDraft = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (window.confirm('Are you sure you want to delete this draft?')) {
+        try {
+          const { error } = await supabase.from('letters').delete().eq('id', letter.id);
+          if (error) throw error;
+          setLetters(prev => prev.filter(l => l.id !== letter.id));
+        } catch (err) {
+          console.error('Error deleting draft:', err);
+          alert('Could not delete the draft. Please try again.');
+        }
+      }
+    };
+
     return (
       <div
         className="bg-secondary-bg rounded-lg shadow-md p-4 flex flex-col justify-between hover:shadow-xl transition-shadow cursor-pointer"
         onClick={() => {
-          setSelectedLetter(letter);
-          setIsDetailModalOpen(true);
+          if (!isDraft) {
+            setSelectedLetter(letter);
+            setIsDetailModalOpen(true);
+          }
         }}
       >
         <div>
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-bold text-lg text-primary truncate pr-2">
-              {letter.user_subject || letter.subject || 'No Subject'}
+              {isDraft ? (letter.content?.substring(0, 20) || 'Untitled Draft') : (letter.user_subject || letter.subject || 'No Subject')}
             </h3>
-            <Pencil className="w-4 h-4 text-secondary" />
+            {!isDraft && <Pencil className="w-4 h-4 text-secondary" />}
           </div>
           <p className="text-sm text-secondary mb-4">
             To: {letter.recipient_name || 'Anonymous'}
@@ -358,15 +402,32 @@ export default function Dashboard() {
           <div className="text-xs text-gray-400">
             {new Date(letter.created_at).toLocaleDateString()}
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/letter/${letter.share_code}`);
-            }}
-            className="text-xs bg-btn-primary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
-          >
-            View Letter
-          </button>
+          {isDraft ? (
+            <div className="flex gap-2">
+              <button
+                onClick={handleContinueDraft}
+                className="text-xs bg-btn-primary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+              >
+                Continue Draft
+              </button>
+              <button
+                onClick={handleDeleteDraft}
+                className="text-xs bg-red-500 text-white font-semibold py-1 px-3 rounded-full hover:bg-red-600 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/letter/${letter.share_code}`);
+              }}
+              className="text-xs bg-btn-primary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+            >
+              View Letter
+            </button>
+          )}
         </div>
       </div>
     );
