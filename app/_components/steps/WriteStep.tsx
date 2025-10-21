@@ -14,7 +14,6 @@ export default function WriteStep() {
   const { letterData, updateLetterData } = useLetterData();
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
-  const [content, setContent] = useState(letterData.content);
   const [senderName, setSenderName] = useState(letterData.senderName);
   const [recipientName, setRecipientName] = useState(letterData.recipientName);
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
@@ -96,12 +95,12 @@ export default function WriteStep() {
   const handleSave = async () => {
     setSaveStatus('saving');
     setIsSaving(true);
-    updateLetterData({ content, senderName, recipientName });
+    updateLetterData({ senderName, recipientName });
 
     if (user) {
       // Logged-in user: save draft to the database
       const letterPayload = {
-        content,
+        content: letterData.content,
         sender_name: senderName,
         recipient_name: recipientName,
         theme: letterData.theme,
@@ -139,15 +138,6 @@ export default function WriteStep() {
       if (data) {
         updateLetterData({ id: data.id });
       }
-    } else {
-      // Anonymous user: save to localStorage
-      const letterToSave = {
-        ...letterData,
-        content,
-        senderName,
-        recipientName,
-      };
-      localStorage.setItem('letterData', JSON.stringify(letterToSave));
     }
 
     setSaveStatus('saved');
@@ -190,7 +180,6 @@ export default function WriteStep() {
       temp_id: null,
     });
     localStorage.removeItem('letterData');
-    setContent('');
     setRecipientName('');
     setIsRecipientNameSet(false);
   };

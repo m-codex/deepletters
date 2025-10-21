@@ -109,13 +109,6 @@ export default function MusicStep() {
         console.error('Error updating music selection:', error);
         // Optionally, show an error message to the user
       }
-    } else {
-      // Anonymous user: save to localStorage
-      const letterToSave = {
-        ...letterData,
-        musicUrl: selectedMusicUrl,
-      };
-      localStorage.setItem('letterData', JSON.stringify(letterToSave));
     }
 
     router.push('/create/preview');
