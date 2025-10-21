@@ -213,46 +213,61 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
-    const initDashboard = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const user = session.user;
+        setUser(user);
 
-      if (!session) {
-        router.push("/");
-        return;
+        // Check if there's a recently finalized letter to associate with the user
+        const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
+        if (shareCodeToClaim) {
+          const claimLetter = async () => {
+            try {
+              const { error } = await supabase
+                .from('letters')
+                .update({ sender_id: user.id })
+                .eq('share_code', shareCodeToClaim);
+              if (error) throw error;
+              localStorage.removeItem('lastFinalizedShareCode');
+              // Refetch data to show the newly claimed letter
+              fetchData(user, view);
+            } catch (error) {
+              console.error('Error claiming letter:', error);
+            }
+          };
+          claimLetter();
+        } else {
+          fetchData(user, view);
+        }
+        setLoading(false);
+      } else if (event === 'SIGNED_OUT') {
+        router.push('/');
       }
+    });
 
-      const user = session.user;
-      setUser(user);
-
-      // Check if there's a recently finalized letter to associate with the user
-      const shareCodeToClaim = localStorage.getItem("lastFinalizedShareCode");
-      if (shareCodeToClaim) {
-        try {
-          const { error } = await supabase
-            .from("letters")
-            .update({ sender_id: user.id })
-            .eq("share_code", shareCodeToClaim);
-
-          if (error) throw error;
-
-          // Clean up localStorage
-          localStorage.removeItem("lastFinalizedShareCode");
-        } catch (error) {
-          console.error("Error claiming letter:", error);
+    // Initial check for a session
+    const initializeSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUser(session.user);
+        await fetchData(session.user, view);
+      } else {
+        // Only redirect if there is no ongoing auth event
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        if (!params.has('access_token')) {
+          router.push('/');
         }
       }
-
-      // Clear the temp_id from localStorage if it exists
-      if (localStorage.getItem("temp_id")) {
-        localStorage.removeItem("temp_id");
-      }
-
-      await fetchData(user, view);
       setLoading(false);
     };
-    initDashboard();
+
+    initializeSession();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [supabase, router, view, fetchData]);
 
   if (loading && !user) {
