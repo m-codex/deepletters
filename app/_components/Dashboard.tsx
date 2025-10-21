@@ -14,6 +14,8 @@ import {
   Settings,
   Trash2,
   Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { Letter, LetterWithSubject } from "@/_lib/supabase";
 import LetterDetailModal from "./LetterDetailModal";
@@ -32,6 +34,8 @@ export default function Dashboard() {
   const [selectedLetter, setSelectedLetter] =
     useState<LetterWithSubject | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [editingFolderName, setEditingFolderName] = useState<string>("");
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -42,6 +46,52 @@ export default function Dashboard() {
     const folderName = prompt("Enter a name for your new folder:");
     if (folderName) {
       handleNewFolder(folderName);
+    }
+  };
+    const handleDeleteFolder = async (folderId: string) => {
+    if (window.confirm("Are you sure you want to delete this folder? This action cannot be undone.")) {
+      try {
+        // First, delete all associations in folder_letters
+        const { error: assocError } = await supabase.from('folder_letters').delete().eq('folder_id', folderId);
+        if (assocError) throw assocError;
+
+        // Then, delete the folder itself
+        const { error: folderError } = await supabase.from('folders').delete().eq('id', folderId);
+        if (folderError) throw folderError;
+
+        setFolders(prev => prev.filter(f => f.id !== folderId));
+        setView('sent'); // Reset view to default
+        setSelectedFolderName(null);
+        setEditingFolderId(null);
+      } catch (err) {
+        console.error("Error deleting folder:", err);
+        alert("Could not delete the folder. Please try again.");
+      }
+    }
+  };
+
+  const handleRenameFolder = async () => {
+    if (!editingFolderId || !editingFolderName.trim()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('folders')
+        .update({ name: editingFolderName.trim() })
+        .eq('id', editingFolderId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setFolders(prev => prev.map(f => f.id === editingFolderId ? data : f));
+        setSelectedFolderName(data.name);
+      }
+      setEditingFolderId(null);
+
+    } catch (err) {
+      console.error("Error renaming folder:", err);
+      alert("Could not rename the folder. Please try again.");
     }
   };
 
@@ -225,18 +275,59 @@ export default function Dashboard() {
     </aside>
   );
 
-  const MainContent = () => (
-    <main className="flex-1 p-8 bg-primary-bg">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-primary capitalize">{selectedFolderName || view}</h1>
-        <div>
-          {/* Action buttons like 'New Folder' can go here */}
+  const MainContent = () => {
+    const isFolderView = view !== 'sent' && view !== 'received';
+    const currentFolder = isFolderView ? folders.find(f => f.id === view) : null;
+
+    return (
+      <main className="flex-1 p-8 bg-primary-bg">
+        <div className="flex justify-between items-center mb-8">
+          {editingFolderId === view && isFolderView ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editingFolderName}
+                onChange={(e) => setEditingFolderName(e.target.value)}
+                className="text-3xl font-bold text-primary bg-transparent border-b-2 border-btn-primary focus:outline-none"
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder()}
+              />
+              <button onClick={handleRenameFolder} className="p-1 text-green-500 hover:text-green-700">
+                <Check className="w-6 h-6" />
+              </button>
+              <button onClick={() => setEditingFolderId(null)} className="p-1 text-red-500 hover:text-red-700">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          ) : (
+            <h1
+              className="text-3xl font-bold text-primary capitalize cursor-pointer flex items-center gap-2"
+              onClick={() => {
+                if (isFolderView && currentFolder) {
+                  setEditingFolderId(currentFolder.id);
+                  setEditingFolderName(currentFolder.name);
+                }
+              }}
+            >
+              {selectedFolderName || view}
+              {isFolderView && <Pencil className="w-5 h-5 text-secondary opacity-50 hover:opacity-100 transition-opacity" />}
+            </h1>
+          )}
+          <div>
+            {editingFolderId === view && (
+              <button
+                onClick={() => handleDeleteFolder(editingFolderId)}
+                className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 flex items-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" /> Delete Folder
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {loading ? (
-          <p className="text-secondary">Loading letters...</p>
-        ) : letters.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {loading ? (
+            <p className="text-secondary">Loading letters...</p>
+          ) : letters.length > 0 ? (
           letters.map(letter => (
             <LetterCard key={letter.id} letter={letter} />
           ))
@@ -246,6 +337,7 @@ export default function Dashboard() {
       </div>
     </main>
   );
+  }
 
   const LetterCard = ({ letter }: { letter: LetterWithSubject }) => {
     return (
@@ -339,7 +431,7 @@ export default function Dashboard() {
     <div className="flex min-h-screen">
       <Sidebar />
       <MainContent />
-      {isDetailModalOpen && (
+      {isDetailModalOpen && selectedLetter && (
         <LetterDetailModal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
@@ -347,7 +439,7 @@ export default function Dashboard() {
           user={user}
           onSubjectUpdate={handleSubjectUpdate}
           folders={folders}
-          onNewFolder={(folderName) => handleNewFolder(folderName, selectedLetter?.id || null)}
+          onNewFolder={(folderName) => handleNewFolder(folderName, selectedLetter.id)}
           onSubjectSave={handleSubjectSave}
           onFolderAssign={handleFolderAssign}
         />
