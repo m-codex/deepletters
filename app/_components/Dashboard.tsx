@@ -197,9 +197,9 @@ export default function Dashboard() {
           <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
           </button>
-          <div className="pt-4">
+          <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className={`text-sm font-semibold text-secondary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</h3>
+              <p className={`text-sm font-semibold text-secondary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</p>
               {isSidebarOpen && (
                 <button onClick={promptForNewFolder} className="text-btn-primary hover:text-btn-hover p-1 rounded-md">
                   <Plus className="w-4 h-4" />
@@ -216,7 +216,7 @@ export default function Dashboard() {
           </div>
         </nav>
       </div>
-      <div className="border-t border-secondary pt-4">
+      <div className="border-t border-border pt-4">
         <button onClick={handleSignOut} className="w-full flex items-center gap-3 p-3 rounded-md hover:bg-red-500 hover:text-white">
           <LogOut className="w-5 h-5" /> {isSidebarOpen && 'Sign Out'}
         </button>
