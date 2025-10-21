@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Save, Eye } from 'lucide-react';
+import { X, Save, Eye, Plus } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { LetterWithSubject } from '@/_lib/supabase';
 import { useSupabase } from './SupabaseProvider';
@@ -59,10 +59,19 @@ export default function LetterDetailModal({
 
   if (!isOpen || !letter || !user) return null;
 
-  const handleSubjectSave = async () => {
+  const handleSaveAndClose = async () => {
+    if (!letter || !user) return;
     setIsSaving(true);
-    await onSubjectSave(letter.id, subject, user.id);
-    setIsSaving(false);
+    try {
+      await onSubjectSave(letter.id, subject, user.id);
+      await onFolderAssign(letter.id, selectedFolder);
+    } catch (error) {
+      console.error('Error saving details:', error);
+      // Optionally, show an error message to the user
+    } finally {
+      setIsSaving(false);
+      onClose();
+    }
   };
 
   const handleFolderChange = (folderId: string | null) => {
@@ -85,7 +94,7 @@ export default function LetterDetailModal({
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
       <div className="bg-secondary-bg rounded-lg shadow-2xl p-8 max-w-2xl w-full relative animate-fadeInUp flex flex-col max-h-[90vh]">
         <button
-          onClick={onClose}
+          onClick={handleSaveAndClose}
           className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors"
           aria-label="Close modal"
         >
@@ -107,14 +116,6 @@ export default function LetterDetailModal({
               placeholder="e.g., 'Birthday thoughts' or 'Project ideas'"
               className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary"
             />
-            <button
-              onClick={handleSubjectSave}
-              disabled={isSaving}
-              className="px-4 py-2 bg-btn-primary text-white rounded-md hover:bg-btn-hover disabled:bg-gray-400 flex items-center gap-2"
-            >
-              <Save className="w-5 h-5" />
-              {isSaving ? 'Saving...' : 'Save'}
-            </button>
           </div>
         </div>
 
@@ -134,8 +135,8 @@ export default function LetterDetailModal({
                 <option key={folder.id} value={folder.id}>{folder.name}</option>
               ))}
             </select>
-            <button onClick={() => setIsCreatingFolder(true)} className="px-4 py-2 bg-btn-secondary text-primary-bg rounded-md hover:bg-btn-hover">
-              New
+            <button onClick={() => setIsCreatingFolder(true)} className="p-2 bg-btn-secondary text-primary-bg rounded-md hover:bg-btn-hover">
+              <Plus className="w-5 h-5" />
             </button>
           </div>
           {isCreatingFolder && (
