@@ -227,29 +227,39 @@ export default function Dashboard() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('AUTH_STATE_CHANGE: Event:', event);
       if (event === 'SIGNED_IN' && session) {
         const user = session.user;
+        console.log('AUTH_STATE_CHANGE: SIGNED_IN, User:', user);
         setUser(user);
 
         const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
+        console.log('AUTH_STATE_CHANGE: Found shareCodeToClaim in localStorage:', shareCodeToClaim);
         if (shareCodeToClaim) {
           const claimLetterAndFetchData = async () => {
             try {
+              console.log('CLAIM_LETTER_START: Calling claim_letter RPC for share_code:', shareCodeToClaim);
               const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
-              if (error) throw error;
+              if (error) {
+                console.error('CLAIM_LETTER_ERROR: Error from claim_letter RPC:', error);
+                throw error;
+              }
+              console.log('CLAIM_LETTER_SUCCESS: Successfully called claim_letter RPC.');
               localStorage.removeItem('lastFinalizedShareCode');
             } catch (error) {
-              console.error('Error claiming letter:', error);
+              console.error('CLAIM_LETTER_ERROR: Error during letter claiming process:', error);
             } finally {
               await fetchData(user, view);
             }
           };
           claimLetterAndFetchData();
         } else {
+          console.log('AUTH_STATE_CHANGE: No shareCodeToClaim found, fetching data normally.');
           fetchData(user, view);
         }
         setLoading(false);
       } else if (event === 'SIGNED_OUT') {
+        console.log('AUTH_STATE_CHANGE: SIGNED_OUT');
         router.push('/');
       }
     });
