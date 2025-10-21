@@ -19,6 +19,7 @@ export default {
         'secondary-bg': 'var(--color-secondary-bg)',
         'primary': 'var(--color-primary)',
         'secondary': 'var(--color-secondary)',
+        'border': 'var(--color-border)',
         'white': 'var(--color-white)',
         'btn-primary': 'var(--color-btn-primary)',
         'btn-hover': 'var(--color-btn-hover)',
