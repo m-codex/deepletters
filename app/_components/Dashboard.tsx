@@ -214,20 +214,42 @@ export default function Dashboard() {
 
   useEffect(() => {
     const initDashboard = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/");
+        return;
+      }
+
+      const user = session.user;
+      setUser(user);
+
+      // Check if there's a recently finalized letter to associate with the user
+      const shareCodeToClaim = localStorage.getItem("lastFinalizedShareCode");
+      if (shareCodeToClaim) {
+        try {
+          const { error } = await supabase
+            .from("letters")
+            .update({ sender_id: user.id })
+            .eq("share_code", shareCodeToClaim);
+
+          if (error) throw error;
+
+          // Clean up localStorage
+          localStorage.removeItem("lastFinalizedShareCode");
+        } catch (error) {
+          console.error("Error claiming letter:", error);
+        }
+      }
+
       // Clear the temp_id from localStorage if it exists
       if (localStorage.getItem("temp_id")) {
         localStorage.removeItem("temp_id");
       }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/");
-        return;
-      }
-      setUser(session.user);
-      await fetchData(session.user, view);
+      await fetchData(user, view);
       setLoading(false);
     };
     initDashboard();
