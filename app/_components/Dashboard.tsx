@@ -147,17 +147,27 @@ export default function Dashboard() {
 
   const fetchData = useCallback(
     async (user: User, currentView: View) => {
+      console.log(`Fetching data for view: ${currentView}`);
       setLoading(true);
       try {
         let lettersData: LetterWithSubject[] = [];
         const { data: allLetters, error: allLettersError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-        if (allLettersError) throw allLettersError;
+        console.log('get_letters_for_user returned:', allLetters);
+        if (allLettersError) {
+            console.error('Error from get_letters_for_user RPC:', allLettersError);
+            throw allLettersError;
+        }
 
         if (currentView === "sent") {
           lettersData = (allLetters || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
+          console.log('Filtered sent letters:', lettersData);
         } else if (currentView === "received") {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-          if (error) throw error;
+          console.log('get_saved_letters_for_user returned:', data);
+          if (error) {
+            console.error('Error from get_saved_letters_for_user RPC:', error);
+            throw error;
+          }
           lettersData = data || [];
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
@@ -221,25 +231,20 @@ export default function Dashboard() {
         const user = session.user;
         setUser(user);
 
-        // Check if there's a recently finalized letter to associate with the user
         const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
         if (shareCodeToClaim) {
-          const claimLetter = async () => {
+          const claimLetterAndFetchData = async () => {
             try {
-              const { data, error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
+              const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
               if (error) throw error;
-
-              if (data && data.length > 0) {
-                const claimedLetter = data[0];
-                setLetters(prevLetters => [claimedLetter, ...prevLetters]);
-              }
-
               localStorage.removeItem('lastFinalizedShareCode');
             } catch (error) {
               console.error('Error claiming letter:', error);
+            } finally {
+              await fetchData(user, view);
             }
           };
-          claimLetter();
+          claimLetterAndFetchData();
         } else {
           fetchData(user, view);
         }
@@ -254,7 +259,7 @@ export default function Dashboard() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setUser(session.user);
-        await fetchData(session.user, view);
+        // Don't fetch data here, let the onAuthStateChange handle it
       } else {
         // Only redirect if there is no ongoing auth event
         const params = new URLSearchParams(window.location.hash.substring(1));
