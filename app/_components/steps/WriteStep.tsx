@@ -16,24 +16,33 @@ export default function WriteStep() {
   const [user, setUser] = useState<User | null>(null);
   const [content, setContent] = useState(letterData.content);
   const [senderName, setSenderName] = useState(letterData.senderName);
+  const [recipientName, setRecipientName] = useState(letterData.recipientName);
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
+  const [isRecipientNameSet, setIsRecipientNameSet] = useState(!!letterData.recipientName);
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingRecipientName, setIsEditingRecipientName] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   useEffect(() => {
-    setSenderName(letterData.senderName);
+    // Pre-fill sender name from localStorage as a default.
+    const storedSenderName = localStorage.getItem('senderName');
+    if (storedSenderName) {
+      setSenderName(storedSenderName);
+    }
 
-    if (letterData.senderName) {
+    // If there's data from the context (i.e., an active draft), use that.
+    // The visibility of the form is also controlled by the context data.
+    if (letterData.senderName && letterData.recipientName) {
+      setSenderName(letterData.senderName);
+      setRecipientName(letterData.recipientName);
       setIsNameSet(true);
+      setIsRecipientNameSet(true);
     } else {
-      const storedName = localStorage.getItem('senderName');
-      if (storedName) {
-        setSenderName(storedName);
-        setIsNameSet(true);
-      } else {
-        setIsNameSet(false);
-      }
+      // For a new letter, recipient name should be blank, and form should be visible.
+      setRecipientName('');
+      setIsNameSet(false);
+      setIsRecipientNameSet(false);
     }
   }, [letterData]);
 
@@ -58,18 +67,36 @@ export default function WriteStep() {
   }, [updateLetterData, supabase.auth]);
 
   const handleNameSubmit = () => {
+    if (senderName.trim() && recipientName.trim()) {
+      localStorage.setItem('senderName', senderName);
+      localStorage.setItem('recipientName', recipientName);
+      updateLetterData({ senderName, recipientName });
+      setIsNameSet(true);
+      setIsRecipientNameSet(true);
+      setIsEditingName(false);
+    }
+  };
+
+  const handleSenderNameSubmit = () => {
     if (senderName.trim()) {
       localStorage.setItem('senderName', senderName);
       updateLetterData({ senderName });
-      setIsNameSet(true);
       setIsEditingName(false);
+    }
+  };
+
+  const handleRecipientNameSubmit = () => {
+    if (recipientName.trim()) {
+      localStorage.setItem('recipientName', recipientName);
+      updateLetterData({ recipientName });
+      setIsEditingRecipientName(false);
     }
   };
 
   const handleSave = async () => {
     setSaveStatus('saving');
     setIsSaving(true);
-    updateLetterData({ content: letterData.content, senderName });
+    updateLetterData({ content: letterData.content, senderName, recipientName });
 
     // Only interact with the database to get a share code if one doesn't exist.
     // The actual content is not saved here anymore.
@@ -82,6 +109,7 @@ export default function WriteStep() {
         .insert({
           share_code: newShareCode,
           sender_name: senderName, // Save sender name for identification
+          recipient_name: recipientName,
           theme: letterData.theme,
           temp_id: letterData.temp_id,
           sender_id: user?.id,
@@ -114,22 +142,22 @@ export default function WriteStep() {
   };
 
   const handleDiscard = async () => {
-    if (!letterData.shareCode) return;
+    if (!letterData.shareCode) {
+      // If there's no share code, just clear the form.
+      updateLetterData({ shareCode: null, content: '', recipientName: '' });
+      return;
+    }
 
     const confirmed = window.confirm('Are you sure you want to discard this draft? This action cannot be undone.');
     if (!confirmed) return;
 
     try {
-      // Only delete the record from the database.
-      // No need to delete from storage as nothing is uploaded until finalization.
       const { error: dbError } = await supabase.from('letters').delete().eq('share_code', letterData.shareCode);
       if (dbError) throw dbError;
 
-      // Clear local storage and reset state
       localStorage.removeItem('unfinalizedShareCode');
-      updateLetterData({ shareCode: null });
-      router.replace('/');
-
+      // This will trigger the useEffect to reset the component state.
+      updateLetterData({ shareCode: null, content: '', recipientName: '' });
     } catch (error) {
       console.error('Error discarding draft:', error);
       alert('Could not discard the draft. Please try again.');
@@ -150,14 +178,15 @@ export default function WriteStep() {
       isNextDisabled={!letterData.content.trim() || isSaving}
     >
       <div className="bg-secondary-bg shadow-xl px-4 py-8 md:p-12 relative">
-        {!isNameSet ? (
+        {!isNameSet || !isRecipientNameSet ? (
           <form
             onSubmit={(e) => {
-                e.preventDefault();
-                handleNameSubmit();
-              }}
-              className="mb-6"
-            >
+              e.preventDefault();
+              handleNameSubmit();
+            }}
+            className="mb-6"
+          >
+            <div className="mb-4">
               <label htmlFor="senderName" className="block text-sm text-secondary mb-2">
                 Your Name
               </label>
@@ -169,36 +198,71 @@ export default function WriteStep() {
                 placeholder="Name"
                 className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
               />
-              <button
-                type="submit"
-                className="mt-4 px-6 py-2 bg-btn-primary text-white rounded hover:bg-btn-hover"
-              >
-                Save Name
-              </button>
-            </form>
-          ) : (
+            </div>
+            <div className="mb-4">
+              <label htmlFor="recipientName" className="block text-sm text-secondary mb-2">
+                Recipient&apos;s Name
+              </label>
+              <input
+                id="recipientName"
+                type="text"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Name"
+                className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+              />
+            </div>
+            <button
+              type="submit"
+              className="mt-4 px-6 py-2 bg-btn-primary text-white rounded hover:bg-btn-hover"
+            >
+              Save Names
+            </button>
+          </form>
+        ) : (
             <>
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-2">
-                  {isEditingName ? (
-                    <input
-                      type="text"
-                      value={senderName}
-                      onChange={(e) => setSenderName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleNameSubmit();
-                        }
-                      }}
-                      onBlur={handleNameSubmit}
-                      autoFocus
-                      className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
-                    />
-                  ) : (
-                    <p className="text-primary" onClick={() => setIsEditingName(true)}>
-                      From: <span className="cursor-pointer">{senderName}</span>
-                    </p>
-                  )}
+                  <div>
+                    {isEditingName ? (
+                      <input
+                        type="text"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSenderNameSubmit();
+                          }
+                        }}
+                        onBlur={handleSenderNameSubmit}
+                        autoFocus
+                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                      />
+                    ) : (
+                      <p className="text-primary" onClick={() => setIsEditingName(true)}>
+                        From: <span className="cursor-pointer">{senderName}</span>
+                      </p>
+                    )}
+                    {isEditingRecipientName ? (
+                      <input
+                        type="text"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleRecipientNameSubmit();
+                          }
+                        }}
+                        onBlur={handleRecipientNameSubmit}
+                        autoFocus
+                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                      />
+                    ) : (
+                      <p className="text-primary" onClick={() => setIsEditingRecipientName(true)}>
+                        To: <span className="cursor-pointer">{recipientName}</span>
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-4">
                     {letterData.shareCode && (
                       <button

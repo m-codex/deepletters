@@ -7,6 +7,7 @@ export type LetterData = {
   shareCode: string | null;
   content: string;
   senderName: string;
+  recipientName: string;
   musicUrl: string | null;
   musicVolume: number;
   finalized_at: string | null;
@@ -27,6 +28,7 @@ const initialLetterData: LetterData = {
   shareCode: null,
   content: '',
   senderName: '',
+  recipientName: '',
   musicUrl: null,
   musicVolume: 0.5,
   finalized_at: null,

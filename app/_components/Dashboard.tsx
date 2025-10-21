@@ -248,12 +248,21 @@ export default function Dashboard() {
 
   const LetterCard = ({ letter }: { letter: LetterWithSubject }) => {
     const [subject, setSubject] = useState(letter.user_subject || letter.subject || '');
+    const [recipientName, setRecipientName] = useState(letter.recipient_name || '');
     const [isEditing, setIsEditing] = useState(false);
+    const [isEditingRecipient, setIsEditingRecipient] = useState(false);
 
     const onSubjectSave = async () => {
       if (user) {
         await handleSubjectSave(letter.id, subject, user.id);
         setIsEditing(false);
+      }
+    };
+
+    const onRecipientNameSave = async () => {
+      if (user) {
+        await handleRecipientNameSave(letter.id, recipientName);
+        setIsEditingRecipient(false);
       }
     };
 
@@ -284,7 +293,20 @@ export default function Dashboard() {
               </button>
             </div>
           )}
-          <p className="text-sm text-secondary mb-4">To: {letter.recipient_name || 'Anonymous'}</p>
+          {isEditingRecipient ? (
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                className="flex-grow w-full px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md"
+              />
+              <button onClick={(e) => { e.stopPropagation(); onRecipientNameSave(); }} className="px-2 py-1 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Save</button>
+            </div>
+          ) : (
+            <p className="text-sm text-secondary mb-4" onClick={(e) => { e.stopPropagation(); setIsEditingRecipient(true); }}>To: {recipientName || 'Anonymous'}</p>
+          )}
           <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
         </div>
         <div className="flex justify-between items-center mt-4">
@@ -314,6 +336,28 @@ export default function Dashboard() {
     );
     if (selectedLetter && selectedLetter.id === letterId) {
       setSelectedLetter(prev => prev ? { ...prev, user_subject: newSubject, subject: newSubject } : null);
+    }
+  };
+
+  const handleRecipientNameUpdate = (letterId: string, newRecipientName: string) => {
+    setLetters(prevLetters =>
+      prevLetters.map(l =>
+        l.id === letterId ? { ...l, recipient_name: newRecipientName } : l
+      )
+    );
+    if (selectedLetter && selectedLetter.id === letterId) {
+      setSelectedLetter(prev => prev ? { ...prev, recipient_name: newRecipientName } : null);
+    }
+  };
+
+  const handleRecipientNameSave = async (letterId: string, recipientName: string) => {
+    try {
+      const { error } = await supabase.from('letters').update({ recipient_name: recipientName }).eq('id', letterId);
+      if (error) throw error;
+      handleRecipientNameUpdate(letterId, recipientName);
+    } catch (err) {
+      console.error('Error saving recipient name:', err);
+      alert('Failed to save recipient name.');
     }
   };
 
