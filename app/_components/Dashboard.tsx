@@ -153,7 +153,7 @@ export default function Dashboard() {
         if (currentView === "sent") {
           const { data, error } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
-          lettersData = (data || []).filter(letter => letter.status === 'finalized');
+          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
         } else if (currentView === "received") {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
@@ -255,11 +255,11 @@ export default function Dashboard() {
           <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Send className="w-5 h-5" /> {isSidebarOpen && 'Sent'}
           </button>
-          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
-            <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
-          </button>
           <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
             <Pencil className="w-5 h-5" /> {isSidebarOpen && 'Drafts'}
+          </button>
+          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+            <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
           </button>
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
