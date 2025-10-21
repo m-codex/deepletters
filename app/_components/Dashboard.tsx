@@ -225,10 +225,7 @@ export default function Dashboard() {
         if (shareCodeToClaim) {
           const claimLetter = async () => {
             try {
-              const { error } = await supabase
-                .from('letters')
-                .update({ sender_id: user.id })
-                .eq('share_code', shareCodeToClaim);
+              const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
               if (error) throw error;
               localStorage.removeItem('lastFinalizedShareCode');
               // Refetch data to show the newly claimed letter
