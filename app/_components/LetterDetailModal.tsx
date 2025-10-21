@@ -134,7 +134,7 @@ export default function LetterDetailModal({
                 <option key={folder.id} value={folder.id}>{folder.name}</option>
               ))}
             </select>
-            <button onClick={() => setIsCreatingFolder(true)} className="px-4 py-2 bg-btn-secondary text-white rounded-md hover:bg-btn-hover">
+            <button onClick={() => setIsCreatingFolder(true)} className="px-4 py-2 bg-btn-secondary text-primary-bg rounded-md hover:bg-btn-hover">
               New
             </button>
           </div>
@@ -160,7 +160,7 @@ export default function LetterDetailModal({
         <div className="mt-6 flex justify-end gap-4">
           <button
             onClick={() => router.push(`/letter/${letter.share_code}`)}
-            className="px-6 py-2 bg-btn-secondary text-white rounded-md hover:bg-btn-hover flex items-center gap-2"
+            className="px-6 py-2 bg-btn-primary text-white rounded-md hover:bg-btn-hover flex items-center gap-2"
           >
             <Eye className="w-5 h-5" />
             View Letter
