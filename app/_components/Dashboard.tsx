@@ -13,7 +13,7 @@ import {
   Loader2,
   Settings,
   Trash2,
-  Edit,
+  Pencil,
 } from "lucide-react";
 import { Letter, LetterWithSubject } from "@/_lib/supabase";
 import LetterDetailModal from "./LetterDetailModal";
@@ -289,7 +289,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-bold text-lg text-primary truncate pr-2">{subject || 'No Subject'}</h3>
               <button onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} className="p-1 text-secondary hover:text-primary">
-                <Edit className="w-4 h-4" />
+                <Pencil className="w-4 h-4" />
               </button>
             </div>
           )}
