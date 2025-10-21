@@ -150,10 +150,11 @@ export default function Dashboard() {
       setLoading(true);
       try {
         let lettersData: LetterWithSubject[] = [];
+        const { data: allLetters, error: allLettersError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
+        if (allLettersError) throw allLettersError;
+
         if (currentView === "sent") {
-          const { data, error } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-          if (error) throw error;
-          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
+          lettersData = (allLetters || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
         } else if (currentView === "received") {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
