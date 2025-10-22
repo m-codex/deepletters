@@ -147,12 +147,10 @@ export default function Dashboard() {
 
   const fetchData = useCallback(
     async (user: User, currentView: View) => {
-      console.log(`Fetching data for view: ${currentView}`);
       setLoading(true);
       try {
         let lettersData: LetterWithSubject[] = [];
         const { data: allLetters, error: allLettersError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-        console.log('get_letters_for_user returned:', allLetters);
         if (allLettersError) {
             console.error('Error from get_letters_for_user RPC:', allLettersError);
             throw allLettersError;
@@ -160,10 +158,8 @@ export default function Dashboard() {
 
         if (currentView === "sent") {
           lettersData = (allLetters || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
-          console.log('Filtered sent letters:', lettersData);
         } else if (currentView === "received") {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-          console.log('get_saved_letters_for_user returned:', data);
           if (error) {
             console.error('Error from get_saved_letters_for_user RPC:', error);
             throw error;
@@ -227,39 +223,29 @@ export default function Dashboard() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('AUTH_STATE_CHANGE: Event:', event);
       if (event === 'SIGNED_IN' && session) {
         const user = session.user;
-        console.log('AUTH_STATE_CHANGE: SIGNED_IN, User:', user);
         setUser(user);
 
         const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
-        console.log('AUTH_STATE_CHANGE: Found shareCodeToClaim in localStorage:', shareCodeToClaim);
         if (shareCodeToClaim) {
           const claimLetterAndFetchData = async () => {
             try {
-              console.log('CLAIM_LETTER_START: Calling claim_letter RPC for share_code:', shareCodeToClaim);
               const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
-              if (error) {
-                console.error('CLAIM_LETTER_ERROR: Error from claim_letter RPC:', error);
-                throw error;
-              }
-              console.log('CLAIM_LETTER_SUCCESS: Successfully called claim_letter RPC.');
+              if (error) throw error;
               localStorage.removeItem('lastFinalizedShareCode');
             } catch (error) {
-              console.error('CLAIM_LETTER_ERROR: Error during letter claiming process:', error);
+              console.error('Error claiming letter:', error);
             } finally {
               await fetchData(user, view);
             }
           };
           claimLetterAndFetchData();
         } else {
-          console.log('AUTH_STATE_CHANGE: No shareCodeToClaim found, fetching data normally.');
           fetchData(user, view);
         }
         setLoading(false);
       } else if (event === 'SIGNED_OUT') {
-        console.log('AUTH_STATE_CHANGE: SIGNED_OUT');
         router.push('/');
       }
     });
