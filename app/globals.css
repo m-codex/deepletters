@@ -11,7 +11,8 @@
     --color-secondary: #b3b3b3;
     --color-border: #666666;
     --color-white: #FFFFFF;
-    --color-btn-primary: #03A6A1; /* #af9888 */
+    --color-accent: #af9888;
+    --color-btn-primary: #7a7168; /* #af9888 */
     --color-btn-hover: #998578;
     --color-btn-secondary: #E3DFDC;
     --color-btn-secondary-text: #262626;
@@ -24,7 +25,8 @@
     --color-secondary: #5A5A5A;
     --color-border: #cfcfcf;
     --color-white: #FFFFFF;
-    --color-btn-primary: #af9888;
+    --color-accent: #af9888;
+    --color-btn-primary: #7a7168; /* #af9888 */
     --color-btn-hover: #998578;
     --color-btn-secondary: #E3DFDC;
     --color-btn-secondary-text: #262626;
