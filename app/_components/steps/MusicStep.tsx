@@ -126,7 +126,7 @@ export default function MusicStep() {
     <StepWrapper
       title="Choose Background Music"
       description="Add a beautiful soundtrack to your letter"
-      icon={<Music className="w-8 h-8 text-btn-primary" />}
+      icon={<Music className="w-8 h-8 text-accent" />}
       buttonText="Next Step"
       onNext={handleNext}
       isNextDisabled={false}
