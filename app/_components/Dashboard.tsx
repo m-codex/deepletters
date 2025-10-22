@@ -219,83 +219,68 @@ export default function Dashboard() {
     [supabase],
   );
 
+  // Effect for handling authentication and one-time letter claiming
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const user = session.user;
-        setUser(user);
+    const claimLetter = async (user: User) => {
+      const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
+      if (!shareCodeToClaim) {
+        return; // Nothing to claim
+      }
 
-        const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
-        if (shareCodeToClaim) {
-          const claimLetterAndFetchData = async () => {
-            let claimedLetter: LetterWithSubject | null = null;
-            try {
-              const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
-              if (claimError) {
-                console.error('Error claiming letter RPC:', claimError);
-                throw claimError;
-              }
+      try {
+        const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
+        if (claimError) throw claimError;
 
-              const { data: letter, error: letterError } = await supabase
-                .from('letters')
-                .select('*')
-                .eq('share_code', shareCodeToClaim)
-                .single();
+        const { data: letter, error: letterError } = await supabase
+          .from('letters')
+          .select('id')
+          .eq('share_code', shareCodeToClaim)
+          .single();
+        if (letterError) throw letterError;
 
-              if (letterError) {
-                console.error('Error fetching letter by share code:', letterError);
-                throw letterError;
-              }
-
-              if (letter) {
-                const { error: saveError } = await supabase
-                  .from('saved_letters')
-                  .insert({ user_id: user.id, letter_id: letter.id });
-
-                if (saveError && saveError.code !== '23505') {
-                  console.error('Error inserting into saved_letters:', saveError);
-                  throw saveError;
-                }
-                claimedLetter = letter;
-              }
-
-              localStorage.removeItem('lastFinalizedShareCode');
-            } catch (error) {
-              console.error('Full error claiming letter and saving:', error);
-            } finally {
-              if (claimedLetter && view === 'sent') {
-                setLetters(prevLetters => [claimedLetter!, ...prevLetters].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-              } else {
-                await fetchData(user, view);
-              }
-            }
-          };
-          claimLetterAndFetchData();
-        } else {
-          fetchData(user, view);
+        if (letter) {
+          const { error: saveError } = await supabase
+            .from('saved_letters')
+            .insert({ user_id: user.id, letter_id: letter.id });
+          if (saveError && saveError.code !== '23505') {
+            throw saveError;
+          }
         }
-        setLoading(false);
+      } catch (error) {
+        console.error('Error during letter claim process:', error);
+      } finally {
+        localStorage.removeItem('lastFinalizedShareCode');
+      }
+    };
+
+    const handleAuth = async (user: User) => {
+      await claimLetter(user);
+      setUser(user); // Set user state after claim is attempted
+      setLoading(false);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        await handleAuth(session.user);
       } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         router.push('/');
       }
     });
 
-    // Initial check for a session
     const initializeSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setUser(session.user);
-        // Don't fetch data here, let the onAuthStateChange handle it
+        await handleAuth(session.user);
       } else {
-        // Only redirect if there is no ongoing auth event
         const params = new URLSearchParams(window.location.hash.substring(1));
         if (!params.has('access_token')) {
           router.push('/');
+        } else {
+          // Still loading while the auth state change fires
+          setLoading(true);
         }
       }
-      setLoading(false);
     };
 
     initializeSession();
@@ -303,7 +288,18 @@ export default function Dashboard() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router, view, fetchData]);
+  }, [supabase, router]); // Dependency array without view or fetchData
+
+  // Effect for fetching data when user or view changes
+  useEffect(() => {
+    if (user) {
+      fetchData(user, view);
+    } else {
+      // Not logged in, clear letters and stop loading
+      setLetters([]);
+      setLoading(false);
+    }
+  }, [user, view, fetchData]);
 
   if (loading && !user) {
     return (
