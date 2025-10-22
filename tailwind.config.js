@@ -21,6 +21,7 @@ export default {
         'secondary': 'var(--color-secondary)',
         'border': 'var(--color-border)',
         'white': 'var(--color-white)',
+        'accent': 'var(--color-accent)',
         'btn-primary': 'var(--color-btn-primary)',
         'btn-hover': 'var(--color-btn-hover)',
         'btn-secondary': 'var(--color-btn-secondary)',
