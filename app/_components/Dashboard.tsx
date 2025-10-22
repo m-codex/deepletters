@@ -204,102 +204,81 @@ export default function Dashboard() {
     [supabase],
   );
 
-  // Combined effect for auth, post-login actions, and data fetching
+  // Effect for handling user authentication and post-login actions.
+  // This should only run once on component mount.
   useEffect(() => {
     const handlePostLoginAction = async (user: User) => {
       const actionItem = localStorage.getItem('postLoginAction');
-      if (!actionItem) return false; // Return false if no action was taken
+      if (!actionItem) return;
 
       try {
         const { action, shareCode, letterId } = JSON.parse(actionItem);
-        let actionTaken = false;
 
         if (action === 'claim' && shareCode) {
-          const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
-          if (claimError) throw claimError;
-
-          const { data: letter, error: letterError } = await supabase
-            .from('letters')
-            .select('id')
-            .eq('share_code', shareCode)
-            .single();
-          if (letterError) throw letterError;
-
+          await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
+          const { data: letter } = await supabase.from('letters').select('id').eq('share_code', shareCode).single();
           if (letter) {
-            const { error: saveError } = await supabase
-              .from('saved_letters')
-              .insert({ user_id: user.id, letter_id: letter.id });
-            if (saveError && saveError.code !== '23505') throw saveError;
+            await supabase.from('saved_letters').insert({ user_id: user.id, letter_id: letter.id });
           }
-          actionTaken = true;
         } else if (action === 'save' && letterId) {
-          const { error: saveError } = await supabase
-            .from('saved_letters')
-            .insert({ user_id: user.id, letter_id: letterId });
-          if (saveError && saveError.code !== '23505') throw saveError;
-          actionTaken = true;
+          await supabase.from('saved_letters').insert({ user_id: user.id, letter_id: letterId });
         }
-
-        if (actionTaken) {
-          localStorage.removeItem('postLoginAction');
-        }
-        return actionTaken;
       } catch (error) {
-        console.error('Error handling post-login action:', error);
-        // Clean up even if there's an error to prevent loops
+        console.error('Error in post-login action:', error);
+      } finally {
         localStorage.removeItem('postLoginAction');
-        return false;
       }
     };
 
-    const processUserSession = async (user: User) => {
-      setUser(user); // Set user state immediately for UI responsiveness
-      // 1. Perform the post-login action first.
-      await handlePostLoginAction(user);
-      // 2. NOW fetch the data. This ensures the DB is updated before we read from it.
-      await fetchData(user, view);
-      setLoading(false); // Stop loading only after all data is fetched
+    const processSession = async (sessionUser: User) => {
+      await handlePostLoginAction(sessionUser);
+      setUser(sessionUser);
+      // We set loading to false here, which will trigger the data fetching useEffect.
+      setLoading(false);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Immediate check for an existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        processSession(session.user);
+      } else {
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        if (!params.has('access_token')) {
+            // No session and no magic link, likely a new visitor or logged out.
+            // Redirecting to home might be too aggressive if the dashboard is meant to be public-facing in some capacity.
+            // For now, we just stop the loading process.
+            setLoading(false);
+            router.push('/');
+        }
+        // If there is an access_token, we wait for the onAuthStateChange to fire.
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        await processUserSession(session.user);
+        processSession(session.user);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         router.push('/');
       }
     });
 
-    const initializeSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        await processUserSession(session.user);
-      } else {
-        const params = new URLSearchParams(window.location.hash.substring(1));
-        if (!params.has('access_token')) {
-          router.push('/');
-        } else {
-          // Still loading, waiting for SIGNED_IN event
-          setLoading(true);
-        }
-      }
-    };
-
-    initializeSession();
-
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router, view, fetchData]); // Add view and fetchData dependencies
+  }, [supabase, router]);
 
-  // Effect for re-fetching data only when the view changes, AFTER initial load
+
+  // Effect for fetching data when the user is logged in or the view changes.
   useEffect(() => {
-    // We don't want this to run on the initial load, as processUserSession handles that.
-    // So we check if loading is false and a user is set.
-    if (user && !loading) {
+    // Only fetch data if we have a user and are not in the initial loading state.
+    if (user) {
       fetchData(user, view);
+    } else {
+        // Clear letters if user logs out
+        setLetters([]);
     }
-  }, [view, user, loading, fetchData]);
+  }, [user, view, fetchData]);
 
   if (loading && !user) {
     return (
@@ -357,7 +336,7 @@ export default function Dashboard() {
   );
 
   const MainContent = () => {
-    const isFolderView = view !== 'sent' && view !== 'received';
+    const isFolderView = view !== 'sent' && view !== 'received' && view !== 'drafts';
     const currentFolder = isFolderView ? folders.find(f => f.id === view) : null;
 
     return (
