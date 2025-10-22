@@ -14,7 +14,6 @@ export default function WriteStep() {
   const { letterData, updateLetterData } = useLetterData();
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
-  const [content, setContent] = useState(letterData.content);
   const [senderName, setSenderName] = useState(letterData.senderName);
   const [recipientName, setRecipientName] = useState(letterData.recipientName);
   const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
@@ -96,37 +95,48 @@ export default function WriteStep() {
   const handleSave = async () => {
     setSaveStatus('saving');
     setIsSaving(true);
-    updateLetterData({ content: letterData.content, senderName, recipientName });
+    updateLetterData({ senderName, recipientName });
 
-    // Only interact with the database to get a share code if one doesn't exist.
-    // The actual content is not saved here anymore.
-    if (!letterData.shareCode) {
-      // The share_code is generated using short-uuid, which has a very low probability of collisions.
-      // For this application's scale, it's considered unique enough.
-      const newShareCode = shortUUID.generate();
-      const { data, error } = await supabase
-        .from('letters')
-        .insert({
-          share_code: newShareCode,
-          sender_name: senderName, // Save sender name for identification
-          recipient_name: recipientName,
-          theme: letterData.theme,
-          temp_id: letterData.temp_id,
-          sender_id: user?.id,
-        })
-        .select()
-        .single();
+    if (user) {
+      // Logged-in user: save draft to the database
+      const letterPayload = {
+        content: letterData.content,
+        sender_name: senderName,
+        recipient_name: recipientName,
+        theme: letterData.theme,
+        sender_id: user.id,
+        status: 'draft',
+      };
+
+      let result;
+      if (letterData.id) {
+        // Update existing draft
+        result = await supabase
+          .from('letters')
+          .update(letterPayload)
+          .eq('id', letterData.id)
+          .select()
+          .single();
+      } else {
+        // Create new draft
+        result = await supabase
+          .from('letters')
+          .insert(letterPayload)
+          .select()
+          .single();
+      }
+
+      const { data, error } = result;
 
       if (error) {
-        console.error('Error creating letter entry:', error);
+        console.error('Error saving draft:', error);
         setSaveStatus('error');
         setIsSaving(false);
         return false;
       }
 
       if (data) {
-        updateLetterData({ shareCode: data.share_code, management_token: data.management_token });
-        localStorage.setItem('unfinalizedShareCode', data.share_code);
+        updateLetterData({ id: data.id });
       }
     }
 
@@ -142,26 +152,36 @@ export default function WriteStep() {
   };
 
   const handleDiscard = async () => {
-    if (!letterData.shareCode) {
-      // If there's no share code, just clear the form.
-      updateLetterData({ shareCode: null, content: '', recipientName: '' });
-      return;
-    }
-
     const confirmed = window.confirm('Are you sure you want to discard this draft? This action cannot be undone.');
     if (!confirmed) return;
 
-    try {
-      const { error: dbError } = await supabase.from('letters').delete().eq('share_code', letterData.shareCode);
-      if (dbError) throw dbError;
-
-      localStorage.removeItem('unfinalizedShareCode');
-      // This will trigger the useEffect to reset the component state.
-      updateLetterData({ shareCode: null, content: '', recipientName: '' });
-    } catch (error) {
-      console.error('Error discarding draft:', error);
-      alert('Could not discard the draft. Please try again.');
+    if (user && letterData.id) {
+      // Logged-in user: delete draft from the database
+      try {
+        const { error } = await supabase.from('letters').delete().eq('id', letterData.id);
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error discarding draft:', error);
+        alert('Could not discard the draft. Please try again.');
+        return;
+      }
     }
+
+    // Clear data from context and localStorage
+    updateLetterData({
+      id: null,
+      shareCode: null,
+      content: '',
+      senderName: '',
+      recipientName: '',
+      theme: 'light',
+      musicUrl: null,
+      management_token: null,
+      temp_id: null,
+    });
+    localStorage.removeItem('letterData');
+    setRecipientName('');
+    setIsRecipientNameSet(false);
   };
 
   const toggleTheme = () => {

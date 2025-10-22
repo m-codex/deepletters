@@ -4,6 +4,7 @@ import { createContext, useState, ReactNode, useEffect, useCallback } from 'reac
 import { useSupabase } from './SupabaseProvider';
 
 export type LetterData = {
+  id: string | null;
   shareCode: string | null;
   content: string;
   senderName: string;
@@ -25,6 +26,7 @@ interface LetterContextType {
 export const LetterContext = createContext<LetterContextType | undefined>(undefined);
 
 const initialLetterData: LetterData = {
+  id: null,
   shareCode: null,
   content: '',
   senderName: '',
@@ -66,10 +68,7 @@ export const LetterProvider = ({ children, shareCode }: { children: ReactNode, s
   // Persist to localStorage whenever letterData changes
   useEffect(() => {
     try {
-      // Avoid persisting initial data if no share code is set yet
-      if (letterData.shareCode) {
-        localStorage.setItem('letterData', JSON.stringify(letterData));
-      }
+      localStorage.setItem('letterData', JSON.stringify(letterData));
     } catch (error) {
       console.error('Error writing to localStorage', error);
     }
