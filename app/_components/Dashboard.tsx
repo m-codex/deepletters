@@ -150,21 +150,30 @@ export default function Dashboard() {
       setLoading(true);
       try {
         let lettersData: LetterWithSubject[] = [];
-        const { data: allLetters, error: allLettersError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-        if (allLettersError) {
-            console.error('Error from get_letters_for_user RPC:', allLettersError);
-            throw allLettersError;
-        }
 
-        if (currentView === "sent") {
-          lettersData = (allLetters || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
-        } else if (currentView === "received") {
-          const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-          if (error) {
-            console.error('Error from get_saved_letters_for_user RPC:', error);
-            throw error;
+        // For Sent, Received, and Folder views, we start with all saved letters.
+        if (currentView === 'sent' || currentView === 'received' || (currentView !== 'drafts')) {
+          const { data: savedLetters, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
+          if (error) throw error;
+
+          if (currentView === 'sent') {
+            lettersData = (savedLetters || []).filter((letter: LetterWithSubject) => letter.sender_id === user.id && letter.status === 'finalized');
+          } else if (currentView === 'received') {
+            lettersData = (savedLetters || []).filter((letter: LetterWithSubject) => letter.sender_id !== user.id);
+          } else { // This is a folder view
+            const { data: folderLetters, error: lfError } = await supabase
+              .from('folder_letters')
+              .select('letter_id')
+              .eq('folder_id', currentView);
+            if (lfError) throw lfError;
+
+            if (folderLetters && folderLetters.length > 0) {
+              const letterIds = folderLetters.map(lf => lf.letter_id);
+              lettersData = (savedLetters || []).filter((l: LetterWithSubject) => letterIds.includes(l.id));
+            } else {
+              lettersData = [];
+            }
           }
-          lettersData = data || [];
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
             .from('letters')
@@ -173,32 +182,8 @@ export default function Dashboard() {
             .eq('status', 'draft');
           if (error) throw error;
           lettersData = data || [];
-        } else {
-          const { data: folderLetters, error: lfError } = await supabase
-            .from('folder_letters')
-            .select('letter_id')
-            .eq('folder_id', currentView);
-
-          if (lfError) throw lfError;
-
-          if (folderLetters) {
-            const letterIds = folderLetters.map(lf => lf.letter_id);
-            if (letterIds.length > 0) {
-              const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-              const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-
-              if (sentError) throw sentError;
-              if (receivedError) throw receivedError;
-
-              const allLetters = [...(sentLetters || []), ...(receivedLetters || [])];
-              const uniqueLetters = Array.from(new Map(allLetters.map(l => [l.id, l])).values());
-
-              lettersData = uniqueLetters.filter(l => letterIds.includes(l.id));
-            } else {
-              lettersData = [];
-            }
-          }
         }
+
         lettersData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setLetters(lettersData);
 
@@ -219,59 +204,81 @@ export default function Dashboard() {
     [supabase],
   );
 
+  // Effect for handling user authentication and post-login actions.
+  // This should only run once on component mount.
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const user = session.user;
-        setUser(user);
+    const handlePostLoginAction = async (user: User) => {
+      const actionItem = localStorage.getItem('postLoginAction');
+      if (!actionItem) return;
 
-        const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
-        if (shareCodeToClaim) {
-          const claimLetterAndFetchData = async () => {
-            try {
-              const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
-              if (error) throw error;
-              localStorage.removeItem('lastFinalizedShareCode');
-            } catch (error) {
-              console.error('Error claiming letter:', error);
-            } finally {
-              await fetchData(user, view);
-            }
-          };
-          claimLetterAndFetchData();
-        } else {
-          fetchData(user, view);
+      try {
+        const { action, shareCode, letterId } = JSON.parse(actionItem);
+
+        if (action === 'claim' && shareCode) {
+          await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
+          const { data: letter } = await supabase.from('letters').select('id').eq('share_code', shareCode).single();
+          if (letter) {
+            await supabase.from('saved_letters').insert({ user_id: user.id, letter_id: letter.id });
+          }
+        } else if (action === 'save' && letterId) {
+          await supabase.from('saved_letters').insert({ user_id: user.id, letter_id: letterId });
         }
-        setLoading(false);
+      } catch (error) {
+        console.error('Error in post-login action:', error);
+      } finally {
+        localStorage.removeItem('postLoginAction');
+      }
+    };
+
+    const processSession = async (sessionUser: User) => {
+      await handlePostLoginAction(sessionUser);
+      setUser(sessionUser);
+      // We set loading to false here, which will trigger the data fetching useEffect.
+      setLoading(false);
+    };
+
+    // Immediate check for an existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        processSession(session.user);
+      } else {
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        if (!params.has('access_token')) {
+            // No session and no magic link, likely a new visitor or logged out.
+            // Redirecting to home might be too aggressive if the dashboard is meant to be public-facing in some capacity.
+            // For now, we just stop the loading process.
+            setLoading(false);
+            router.push('/');
+        }
+        // If there is an access_token, we wait for the onAuthStateChange to fire.
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        processSession(session.user);
       } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         router.push('/');
       }
     });
 
-    // Initial check for a session
-    const initializeSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUser(session.user);
-        // Don't fetch data here, let the onAuthStateChange handle it
-      } else {
-        // Only redirect if there is no ongoing auth event
-        const params = new URLSearchParams(window.location.hash.substring(1));
-        if (!params.has('access_token')) {
-          router.push('/');
-        }
-      }
-      setLoading(false);
-    };
-
-    initializeSession();
-
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router, view, fetchData]);
+  }, [supabase, router]);
+
+
+  // Effect for fetching data when the user is logged in or the view changes.
+  useEffect(() => {
+    // Only fetch data if we have a user and are not in the initial loading state.
+    if (user) {
+      fetchData(user, view);
+    } else {
+        // Clear letters if user logs out
+        setLetters([]);
+    }
+  }, [user, view, fetchData]);
 
   if (loading && !user) {
     return (
@@ -329,7 +336,7 @@ export default function Dashboard() {
   );
 
   const MainContent = () => {
-    const isFolderView = view !== 'sent' && view !== 'received';
+    const isFolderView = view !== 'sent' && view !== 'received' && view !== 'drafts';
     const currentFolder = isFolderView ? folders.find(f => f.id === view) : null;
 
     return (
