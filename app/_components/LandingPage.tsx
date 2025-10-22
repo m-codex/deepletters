@@ -23,7 +23,7 @@ export default function LandingPage() {
       <main>
         <section className="container mx-auto px-6 py-16 sm:py-24 text-center">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-secondary-bg rounded-full mb-8">
-          <Mail className="w-12 h-12 text-btn-primary" />
+          <Mail className="w-12 h-12 text-accent" />
         </div>
           <h1 className="text-4xl md:text-6xl text-white mb-6 leading-tight text-balance">
             Send meaningful letters
@@ -115,7 +115,7 @@ interface FeatureCardProps {
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
     <div className="bg-secondary-bg rounded-md p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="text-btn-primary mb-4">{icon}</div>
+      <div className="text-accent mb-4">{icon}</div>
       <h3 className="text-xl text-primary mb-2">{title}</h3>
       <p className="text-secondary">{description}</p>
     </div>
