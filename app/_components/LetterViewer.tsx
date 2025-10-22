@@ -53,6 +53,8 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
 
   const handleSaveLetter = useCallback(async () => {
     if (!user || !letter) {
+      const postLoginAction = { action: 'save', letterId: letter?.id };
+      localStorage.setItem('postLoginAction', JSON.stringify(postLoginAction));
       setIsAuthModalOpen(true);
       return;
     }

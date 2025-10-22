@@ -92,7 +92,8 @@ export default function PreviewStep() {
 
       localStorage.removeItem('letterData');
       localStorage.removeItem('temp_id');
-      localStorage.setItem('lastFinalizedShareCode', shareCode);
+      const postLoginAction = { action: 'claim', shareCode: shareCode };
+      localStorage.setItem('postLoginAction', JSON.stringify(postLoginAction));
       updateLetterData({ shareCode: null });
       router.replace(`/manage/${managementToken}`);
     } catch (error) {

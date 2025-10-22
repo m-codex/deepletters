@@ -219,44 +219,50 @@ export default function Dashboard() {
     [supabase],
   );
 
-  // Effect for handling authentication and one-time letter claiming
+  // Effect for handling authentication and one-time post-login actions
   useEffect(() => {
-    const claimLetter = async (user: User) => {
-      const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
-      if (!shareCodeToClaim) {
-        return; // Nothing to claim
-      }
+    const handlePostLoginAction = async (user: User) => {
+      const actionItem = localStorage.getItem('postLoginAction');
+      if (!actionItem) return;
 
       try {
-        const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
-        if (claimError) throw claimError;
+        const { action, shareCode, letterId } = JSON.parse(actionItem);
 
-        const { data: letter, error: letterError } = await supabase
-          .from('letters')
-          .select('id')
-          .eq('share_code', shareCodeToClaim)
-          .single();
-        if (letterError) throw letterError;
+        if (action === 'claim' && shareCode) {
+          const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
+          if (claimError) throw claimError;
 
-        if (letter) {
+          const { data: letter, error: letterError } = await supabase
+            .from('letters')
+            .select('id')
+            .eq('share_code', shareCode)
+            .single();
+          if (letterError) throw letterError;
+
+          if (letter) {
+            const { error: saveError } = await supabase
+              .from('saved_letters')
+              .insert({ user_id: user.id, letter_id: letter.id });
+            if (saveError && saveError.code !== '23505') throw saveError;
+          }
+        } else if (action === 'save' && letterId) {
           const { error: saveError } = await supabase
             .from('saved_letters')
-            .insert({ user_id: user.id, letter_id: letter.id });
-          if (saveError && saveError.code !== '23505') {
-            throw saveError;
-          }
+            .insert({ user_id: user.id, letter_id: letterId });
+          if (saveError && saveError.code !== '23505') throw saveError;
         }
-        // On success, clean up the localStorage item
-        localStorage.removeItem('lastFinalizedShareCode');
+
+        // On success, clean up the action item
+        localStorage.removeItem('postLoginAction');
       } catch (error) {
-        console.error('Error during letter claim process:', error);
-        // On failure, we leave the localStorage item so the user can try again on next load
+        console.error('Error handling post-login action:', error);
+        // Do not remove the item on failure, so it can be retried.
       }
     };
 
     const handleAuth = async (user: User) => {
-      await claimLetter(user);
-      setUser(user); // Set user state after claim is attempted
+      await handlePostLoginAction(user);
+      setUser(user);
       setLoading(false);
     };
 
@@ -278,7 +284,6 @@ export default function Dashboard() {
         if (!params.has('access_token')) {
           router.push('/');
         } else {
-          // Still loading while the auth state change fires
           setLoading(true);
         }
       }
@@ -289,7 +294,7 @@ export default function Dashboard() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router]); // Dependency array without view or fetchData
+  }, [supabase, router]);
 
   // Effect for fetching data when user or view changes
   useEffect(() => {
