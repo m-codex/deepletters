@@ -7,6 +7,9 @@ export type Letter = {
   share_code: string;
   management_token: string | null;
   sender_name: string | null;
+  recipient_name: string | null;
+  subject: string | null;
+  sender_id: string | null;
   created_at: string;
   view_count: number;
   finalized_at: string | null;
@@ -15,6 +18,4 @@ export type Letter = {
 
 export interface LetterWithSubject extends Letter {
   user_subject?: string;
-  recipient_name?: string;
-  subject?: string;
 }
