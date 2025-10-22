@@ -38,7 +38,7 @@ export default function StepWrapper({
       <div>{children}</div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-primary-bg bg-opacity-90 backdrop-blur-sm p-4 border-t border-secondary-bg">
-        <div className={`max-w-6xl mx-auto flex ${secondaryButtonText ? 'gap-4' : ''}`}>
+        <div className={`container max-w-6xl mx-auto flex ${secondaryButtonText ? 'gap-4' : ''}`}>
           {secondaryButtonText && onSecondaryClick && (
             <button
               onClick={onSecondaryClick}
