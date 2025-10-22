@@ -222,41 +222,65 @@ export default function Dashboard() {
   // Effect for handling authentication and one-time post-login actions
   useEffect(() => {
     const handlePostLoginAction = async (user: User) => {
+      console.log('DEBUG: handlePostLoginAction triggered.');
       const actionItem = localStorage.getItem('postLoginAction');
-      if (!actionItem) return;
+      console.log('DEBUG: postLoginAction from localStorage:', actionItem);
+      if (!actionItem) {
+        console.log('DEBUG: No postLoginAction found. Aborting.');
+        return;
+      }
 
       try {
         const { action, shareCode, letterId } = JSON.parse(actionItem);
+        console.log('DEBUG: Parsed action:', { action, shareCode, letterId });
 
         if (action === 'claim' && shareCode) {
+          console.log(`DEBUG: Claiming letter with shareCode: ${shareCode}`);
           const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
-          if (claimError) throw claimError;
+          if (claimError) {
+            console.error('DEBUG: Error in claim_letter RPC:', claimError);
+            throw claimError;
+          }
+          console.log('DEBUG: claim_letter RPC successful.');
 
           const { data: letter, error: letterError } = await supabase
             .from('letters')
             .select('id')
             .eq('share_code', shareCode)
             .single();
-          if (letterError) throw letterError;
+          if (letterError) {
+            console.error('DEBUG: Error fetching letter by share_code:', letterError);
+            throw letterError;
+          }
+          console.log('DEBUG: Fetched letter ID:', letter?.id);
 
           if (letter) {
+            console.log(`DEBUG: Inserting into saved_letters: user_id=${user.id}, letter_id=${letter.id}`);
             const { error: saveError } = await supabase
               .from('saved_letters')
               .insert({ user_id: user.id, letter_id: letter.id });
-            if (saveError && saveError.code !== '23505') throw saveError;
+            if (saveError && saveError.code !== '23505') {
+              console.error('DEBUG: Error inserting into saved_letters:', saveError);
+              throw saveError;
+            }
+            console.log('DEBUG: Insert into saved_letters successful.');
           }
         } else if (action === 'save' && letterId) {
+          console.log(`DEBUG: Saving letter with letterId: ${letterId}`);
           const { error: saveError } = await supabase
             .from('saved_letters')
             .insert({ user_id: user.id, letter_id: letterId });
-          if (saveError && saveError.code !== '23505') throw saveError;
+          if (saveError && saveError.code !== '23505') {
+            console.error('DEBUG: Error inserting into saved_letters for save action:', saveError);
+            throw saveError;
+          }
+          console.log('DEBUG: Save action successful.');
         }
 
-        // On success, clean up the action item
+        console.log('DEBUG: Post-login action successful. Removing item from localStorage.');
         localStorage.removeItem('postLoginAction');
       } catch (error) {
-        console.error('Error handling post-login action:', error);
-        // Do not remove the item on failure, so it can be retried.
+        console.error('DEBUG: Error handling post-login action:', error);
       }
     };
 
