@@ -164,7 +164,7 @@ export default function Dashboard() {
             console.error('Error from get_saved_letters_for_user RPC:', error);
             throw error;
           }
-          lettersData = data || [];
+          lettersData = (data || []).filter(letter => letter.sender_id !== user.id);
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
             .from('letters')
@@ -230,40 +230,46 @@ export default function Dashboard() {
         const shareCodeToClaim = localStorage.getItem('lastFinalizedShareCode');
         if (shareCodeToClaim) {
           const claimLetterAndFetchData = async () => {
+            let claimedLetter: LetterWithSubject | null = null;
             try {
               const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
               if (claimError) {
                 console.error('Error claiming letter RPC:', claimError);
                 throw claimError;
-              };
+              }
 
               const { data: letter, error: letterError } = await supabase
                 .from('letters')
-                .select('id')
+                .select('*')
                 .eq('share_code', shareCodeToClaim)
                 .single();
 
               if (letterError) {
                 console.error('Error fetching letter by share code:', letterError);
-                throw letterError
-              };
+                throw letterError;
+              }
 
               if (letter) {
                 const { error: saveError } = await supabase
                   .from('saved_letters')
                   .insert({ user_id: user.id, letter_id: letter.id });
 
-                if (saveError && saveError.code !== '23505') { // Ignore unique constraint violations
+                if (saveError && saveError.code !== '23505') {
                   console.error('Error inserting into saved_letters:', saveError);
                   throw saveError;
                 }
+                claimedLetter = letter;
               }
 
               localStorage.removeItem('lastFinalizedShareCode');
             } catch (error) {
               console.error('Full error claiming letter and saving:', error);
             } finally {
-              await fetchData(user, view);
+              if (claimedLetter && view === 'sent') {
+                setLetters(prevLetters => [claimedLetter!, ...prevLetters].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+              } else {
+                await fetchData(user, view);
+              }
             }
           };
           claimLetterAndFetchData();
