@@ -204,14 +204,15 @@ export default function Dashboard() {
     [supabase],
   );
 
-  // Effect for handling authentication and one-time post-login actions
+  // Combined effect for auth, post-login actions, and data fetching
   useEffect(() => {
     const handlePostLoginAction = async (user: User) => {
       const actionItem = localStorage.getItem('postLoginAction');
-      if (!actionItem) return;
+      if (!actionItem) return false; // Return false if no action was taken
 
       try {
         const { action, shareCode, letterId } = JSON.parse(actionItem);
+        let actionTaken = false;
 
         if (action === 'claim' && shareCode) {
           const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
@@ -230,28 +231,39 @@ export default function Dashboard() {
               .insert({ user_id: user.id, letter_id: letter.id });
             if (saveError && saveError.code !== '23505') throw saveError;
           }
+          actionTaken = true;
         } else if (action === 'save' && letterId) {
           const { error: saveError } = await supabase
             .from('saved_letters')
             .insert({ user_id: user.id, letter_id: letterId });
           if (saveError && saveError.code !== '23505') throw saveError;
+          actionTaken = true;
         }
 
-        localStorage.removeItem('postLoginAction');
+        if (actionTaken) {
+          localStorage.removeItem('postLoginAction');
+        }
+        return actionTaken;
       } catch (error) {
         console.error('Error handling post-login action:', error);
+        // Clean up even if there's an error to prevent loops
+        localStorage.removeItem('postLoginAction');
+        return false;
       }
     };
 
-    const handleAuth = async (user: User) => {
+    const processUserSession = async (user: User) => {
+      setUser(user); // Set user state immediately for UI responsiveness
+      // 1. Perform the post-login action first.
       await handlePostLoginAction(user);
-      setUser(user);
-      setLoading(false);
+      // 2. NOW fetch the data. This ensures the DB is updated before we read from it.
+      await fetchData(user, view);
+      setLoading(false); // Stop loading only after all data is fetched
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        await handleAuth(session.user);
+        await processUserSession(session.user);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         router.push('/');
@@ -261,12 +273,13 @@ export default function Dashboard() {
     const initializeSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        await handleAuth(session.user);
+        await processUserSession(session.user);
       } else {
         const params = new URLSearchParams(window.location.hash.substring(1));
         if (!params.has('access_token')) {
           router.push('/');
         } else {
+          // Still loading, waiting for SIGNED_IN event
           setLoading(true);
         }
       }
@@ -277,18 +290,16 @@ export default function Dashboard() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router]);
+  }, [supabase, router, view, fetchData]); // Add view and fetchData dependencies
 
-  // Effect for fetching data when user or view changes
+  // Effect for re-fetching data only when the view changes, AFTER initial load
   useEffect(() => {
-    if (user) {
+    // We don't want this to run on the initial load, as processUserSession handles that.
+    // So we check if loading is false and a user is set.
+    if (user && !loading) {
       fetchData(user, view);
-    } else {
-      // Not logged in, clear letters and stop loading
-      setLetters([]);
-      setLoading(false);
     }
-  }, [user, view, fetchData]);
+  }, [view, user, loading, fetchData]);
 
   if (loading && !user) {
     return (
