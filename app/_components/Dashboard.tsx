@@ -231,11 +231,37 @@ export default function Dashboard() {
         if (shareCodeToClaim) {
           const claimLetterAndFetchData = async () => {
             try {
-              const { error } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
-              if (error) throw error;
+              const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCodeToClaim });
+              if (claimError) {
+                console.error('Error claiming letter RPC:', claimError);
+                throw claimError;
+              };
+
+              const { data: letter, error: letterError } = await supabase
+                .from('letters')
+                .select('id')
+                .eq('share_code', shareCodeToClaim)
+                .single();
+
+              if (letterError) {
+                console.error('Error fetching letter by share code:', letterError);
+                throw letterError
+              };
+
+              if (letter) {
+                const { error: saveError } = await supabase
+                  .from('saved_letters')
+                  .insert({ user_id: user.id, letter_id: letter.id });
+
+                if (saveError && saveError.code !== '23505') { // Ignore unique constraint violations
+                  console.error('Error inserting into saved_letters:', saveError);
+                  throw saveError;
+                }
+              }
+
               localStorage.removeItem('lastFinalizedShareCode');
             } catch (error) {
-              console.error('Error claiming letter:', error);
+              console.error('Full error claiming letter and saving:', error);
             } finally {
               await fetchData(user, view);
             }
