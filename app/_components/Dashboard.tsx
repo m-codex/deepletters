@@ -164,7 +164,7 @@ export default function Dashboard() {
             console.error('Error from get_saved_letters_for_user RPC:', error);
             throw error;
           }
-          lettersData = (data || []).filter(letter => letter.sender_id !== user.id);
+          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.sender_id !== user.id);
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
             .from('letters')
