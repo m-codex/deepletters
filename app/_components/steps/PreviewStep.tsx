@@ -55,7 +55,7 @@ export default function PreviewStep() {
     try {
       if (user && letterData.id) {
         // Logged-in user: Update the existing draft to finalized
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('letters')
           .update({
             status: 'finalized',
@@ -64,7 +64,15 @@ export default function PreviewStep() {
             share_code: shareCode,
           })
           .eq('id', letterData.id);
-        if (error) throw error;
+        if (updateError) throw updateError;
+
+        // Also add it to the user's saved_letters
+        const { error: saveError } = await supabase
+          .from('saved_letters')
+          .insert({ user_id: user.id, letter_id: letterData.id });
+        if (saveError && saveError.code !== '23505') {
+          throw saveError;
+        }
       } else {
         // Anonymous user: Insert a new finalized letter
         const { data, error } = await supabase

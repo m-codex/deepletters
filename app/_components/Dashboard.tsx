@@ -151,14 +151,29 @@ export default function Dashboard() {
       try {
         let lettersData: LetterWithSubject[] = [];
 
-        if (currentView === "sent") {
-          const { data, error } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
+        // For Sent, Received, and Folder views, we start with all saved letters.
+        if (currentView === 'sent' || currentView === 'received' || (currentView !== 'drafts')) {
+          const { data: savedLetters, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
-          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
-        } else if (currentView === "received") {
-          const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-          if (error) throw error;
-          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.sender_id !== user.id);
+
+          if (currentView === 'sent') {
+            lettersData = (savedLetters || []).filter(letter => letter.sender_id === user.id && letter.status === 'finalized');
+          } else if (currentView === 'received') {
+            lettersData = (savedLetters || []).filter(letter => letter.sender_id !== user.id);
+          } else { // This is a folder view
+            const { data: folderLetters, error: lfError } = await supabase
+              .from('folder_letters')
+              .select('letter_id')
+              .eq('folder_id', currentView);
+            if (lfError) throw lfError;
+
+            if (folderLetters && folderLetters.length > 0) {
+              const letterIds = folderLetters.map(lf => lf.letter_id);
+              lettersData = (savedLetters || []).filter(l => letterIds.includes(l.id));
+            } else {
+              lettersData = [];
+            }
+          }
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
             .from('letters')
@@ -167,30 +182,6 @@ export default function Dashboard() {
             .eq('status', 'draft');
           if (error) throw error;
           lettersData = data || [];
-        } else {
-          // This part handles folder views, which can contain both sent and received letters.
-          const { data: folderLetters, error: lfError } = await supabase
-            .from('folder_letters')
-            .select('letter_id')
-            .eq('folder_id', currentView);
-          if (lfError) throw lfError;
-
-          if (folderLetters && folderLetters.length > 0) {
-            const letterIds = folderLetters.map(lf => lf.letter_id);
-            // Fetch all letters related to the user and then filter by the folder's letter IDs.
-            const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-            const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-
-            if (sentError) throw sentError;
-            if (receivedError) throw receivedError;
-
-            const allUserLetters = [...(sentLetters || []), ...(receivedLetters || [])];
-            const uniqueLetters = Array.from(new Map(allUserLetters.map(l => [l.id, l])).values());
-
-            lettersData = uniqueLetters.filter(l => letterIds.includes(l.id));
-          } else {
-            lettersData = [];
-          }
         }
 
         lettersData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
