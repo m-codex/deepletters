@@ -153,7 +153,10 @@ export default function Dashboard() {
 
         // For Sent, Received, and Folder views, we start with all saved letters.
         if (currentView === 'sent' || currentView === 'received' || (currentView !== 'drafts')) {
+          console.log("Fetching saved letters for user:", user.id);
           const { data: savedLetters, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
+          console.log("Raw saved letters data:", savedLetters);
+          console.log("Error fetching saved letters:", error);
           if (error) throw error;
 
           if (currentView === 'sent') {
@@ -175,11 +178,14 @@ export default function Dashboard() {
             }
           }
         } else if (currentView === "drafts") {
+          console.log("Fetching drafts for user:", user.id);
           const { data, error } = await supabase
             .from('letters')
             .select('*')
             .eq('sender_id', user.id)
             .eq('status', 'draft');
+          console.log("Raw drafts data:", data);
+          console.log("Error fetching drafts:", error);
           if (error) throw error;
           lettersData = data || [];
         }
