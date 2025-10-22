@@ -287,7 +287,7 @@ export default function WriteStep() {
                     {letterData.shareCode && (
                       <button
                         onClick={handleDiscard}
-                        className="text-sm text-btn-primary hover:underline"
+                        className="text-sm text-accent hover:underline"
                       >
                         New
                       </button>
