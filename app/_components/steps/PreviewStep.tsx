@@ -115,7 +115,7 @@ export default function PreviewStep() {
     <StepWrapper
       title="Preview Your Letter"
       description="This is how your letter will appear to the recipient."
-      icon={<MailCheck className="w-8 h-8 text-btn-primary" />}
+      icon={<MailCheck className="w-8 h-8 text-accent" />}
       buttonText={isLoading ? 'Finalizing...' : 'Finalize & Share'}
       onNext={handleFinalize}
       isNextDisabled={isLoading}
