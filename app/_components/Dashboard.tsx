@@ -157,9 +157,9 @@ export default function Dashboard() {
           if (error) throw error;
 
           if (currentView === 'sent') {
-            lettersData = (savedLetters || []).filter(letter => letter.sender_id === user.id && letter.status === 'finalized');
+            lettersData = (savedLetters || []).filter((letter: LetterWithSubject) => letter.sender_id === user.id && letter.status === 'finalized');
           } else if (currentView === 'received') {
-            lettersData = (savedLetters || []).filter(letter => letter.sender_id !== user.id);
+            lettersData = (savedLetters || []).filter((letter: LetterWithSubject) => letter.sender_id !== user.id);
           } else { // This is a folder view
             const { data: folderLetters, error: lfError } = await supabase
               .from('folder_letters')
@@ -169,7 +169,7 @@ export default function Dashboard() {
 
             if (folderLetters && folderLetters.length > 0) {
               const letterIds = folderLetters.map(lf => lf.letter_id);
-              lettersData = (savedLetters || []).filter(l => letterIds.includes(l.id));
+              lettersData = (savedLetters || []).filter((l: LetterWithSubject) => letterIds.includes(l.id));
             } else {
               lettersData = [];
             }
