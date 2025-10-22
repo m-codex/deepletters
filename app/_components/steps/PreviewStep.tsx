@@ -91,6 +91,7 @@ export default function PreviewStep() {
       }
 
       localStorage.removeItem('letterData');
+      localStorage.removeItem('temp_id');
       localStorage.setItem('lastFinalizedShareCode', shareCode);
       updateLetterData({ shareCode: null });
       router.replace(`/manage/${managementToken}`);
