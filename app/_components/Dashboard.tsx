@@ -246,10 +246,11 @@ export default function Dashboard() {
             throw saveError;
           }
         }
+        // On success, clean up the localStorage item
+        localStorage.removeItem('lastFinalizedShareCode');
       } catch (error) {
         console.error('Error during letter claim process:', error);
-      } finally {
-        localStorage.removeItem('lastFinalizedShareCode');
+        // On failure, we leave the localStorage item so the user can try again on next load
       }
     };
 
