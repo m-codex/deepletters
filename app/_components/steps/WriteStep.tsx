@@ -192,7 +192,7 @@ export default function WriteStep() {
     <StepWrapper
       title="Write Your Letter"
       description="Express your feelings, share your thoughts, or simply say hello"
-      icon={<PenLine className="w-8 h-8 text-btn-primary" />}
+      icon={<PenLine className="w-8 h-8 text-accent" />}
       buttonText={isSaving ? 'Saving...' : 'Next Step'}
       onNext={handleNext}
       isNextDisabled={!letterData.content.trim() || isSaving}
