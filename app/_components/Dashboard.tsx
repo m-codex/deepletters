@@ -158,7 +158,7 @@ export default function Dashboard() {
         } else if (currentView === "received") {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
           if (error) throw error;
-          lettersData = (data || []).filter(letter => letter.sender_id !== user.id);
+          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.sender_id !== user.id);
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
             .from('letters')
