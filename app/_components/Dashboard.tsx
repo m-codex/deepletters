@@ -150,21 +150,15 @@ export default function Dashboard() {
       setLoading(true);
       try {
         let lettersData: LetterWithSubject[] = [];
-        const { data: allLetters, error: allLettersError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-        if (allLettersError) {
-            console.error('Error from get_letters_for_user RPC:', allLettersError);
-            throw allLettersError;
-        }
 
         if (currentView === "sent") {
-          lettersData = (allLetters || []).filter((letter: LetterWithSubject) => letter.status === 'finalized');
+          const { data, error } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
+          if (error) throw error;
+          lettersData = (data || []).filter(letter => letter.status === 'finalized');
         } else if (currentView === "received") {
           const { data, error } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
-          if (error) {
-            console.error('Error from get_saved_letters_for_user RPC:', error);
-            throw error;
-          }
-          lettersData = (data || []).filter((letter: LetterWithSubject) => letter.sender_id !== user.id);
+          if (error) throw error;
+          lettersData = (data || []).filter(letter => letter.sender_id !== user.id);
         } else if (currentView === "drafts") {
           const { data, error } = await supabase
             .from('letters')
@@ -174,31 +168,31 @@ export default function Dashboard() {
           if (error) throw error;
           lettersData = data || [];
         } else {
+          // This part handles folder views, which can contain both sent and received letters.
           const { data: folderLetters, error: lfError } = await supabase
             .from('folder_letters')
             .select('letter_id')
             .eq('folder_id', currentView);
-
           if (lfError) throw lfError;
 
-          if (folderLetters) {
+          if (folderLetters && folderLetters.length > 0) {
             const letterIds = folderLetters.map(lf => lf.letter_id);
-            if (letterIds.length > 0) {
-              const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
-              const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
+            // Fetch all letters related to the user and then filter by the folder's letter IDs.
+            const { data: sentLetters, error: sentError } = await supabase.rpc("get_letters_for_user", { p_user_id: user.id });
+            const { data: receivedLetters, error: receivedError } = await supabase.rpc("get_saved_letters_for_user", { p_user_id: user.id });
 
-              if (sentError) throw sentError;
-              if (receivedError) throw receivedError;
+            if (sentError) throw sentError;
+            if (receivedError) throw receivedError;
 
-              const allLetters = [...(sentLetters || []), ...(receivedLetters || [])];
-              const uniqueLetters = Array.from(new Map(allLetters.map(l => [l.id, l])).values());
+            const allUserLetters = [...(sentLetters || []), ...(receivedLetters || [])];
+            const uniqueLetters = Array.from(new Map(allUserLetters.map(l => [l.id, l])).values());
 
-              lettersData = uniqueLetters.filter(l => letterIds.includes(l.id));
-            } else {
-              lettersData = [];
-            }
+            lettersData = uniqueLetters.filter(l => letterIds.includes(l.id));
+          } else {
+            lettersData = [];
           }
         }
+
         lettersData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setLetters(lettersData);
 
@@ -222,65 +216,39 @@ export default function Dashboard() {
   // Effect for handling authentication and one-time post-login actions
   useEffect(() => {
     const handlePostLoginAction = async (user: User) => {
-      console.log('DEBUG: handlePostLoginAction triggered.');
       const actionItem = localStorage.getItem('postLoginAction');
-      console.log('DEBUG: postLoginAction from localStorage:', actionItem);
-      if (!actionItem) {
-        console.log('DEBUG: No postLoginAction found. Aborting.');
-        return;
-      }
+      if (!actionItem) return;
 
       try {
         const { action, shareCode, letterId } = JSON.parse(actionItem);
-        console.log('DEBUG: Parsed action:', { action, shareCode, letterId });
 
         if (action === 'claim' && shareCode) {
-          console.log(`DEBUG: Claiming letter with shareCode: ${shareCode}`);
           const { error: claimError } = await supabase.rpc('claim_letter', { share_code_to_claim: shareCode });
-          if (claimError) {
-            console.error('DEBUG: Error in claim_letter RPC:', claimError);
-            throw claimError;
-          }
-          console.log('DEBUG: claim_letter RPC successful.');
+          if (claimError) throw claimError;
 
           const { data: letter, error: letterError } = await supabase
             .from('letters')
             .select('id')
             .eq('share_code', shareCode)
             .single();
-          if (letterError) {
-            console.error('DEBUG: Error fetching letter by share_code:', letterError);
-            throw letterError;
-          }
-          console.log('DEBUG: Fetched letter ID:', letter?.id);
+          if (letterError) throw letterError;
 
           if (letter) {
-            console.log(`DEBUG: Inserting into saved_letters: user_id=${user.id}, letter_id=${letter.id}`);
             const { error: saveError } = await supabase
               .from('saved_letters')
               .insert({ user_id: user.id, letter_id: letter.id });
-            if (saveError && saveError.code !== '23505') {
-              console.error('DEBUG: Error inserting into saved_letters:', saveError);
-              throw saveError;
-            }
-            console.log('DEBUG: Insert into saved_letters successful.');
+            if (saveError && saveError.code !== '23505') throw saveError;
           }
         } else if (action === 'save' && letterId) {
-          console.log(`DEBUG: Saving letter with letterId: ${letterId}`);
           const { error: saveError } = await supabase
             .from('saved_letters')
             .insert({ user_id: user.id, letter_id: letterId });
-          if (saveError && saveError.code !== '23505') {
-            console.error('DEBUG: Error inserting into saved_letters for save action:', saveError);
-            throw saveError;
-          }
-          console.log('DEBUG: Save action successful.');
+          if (saveError && saveError.code !== '23505') throw saveError;
         }
 
-        console.log('DEBUG: Post-login action successful. Removing item from localStorage.');
         localStorage.removeItem('postLoginAction');
       } catch (error) {
-        console.error('DEBUG: Error handling post-login action:', error);
+        console.error('Error handling post-login action:', error);
       }
     };
 

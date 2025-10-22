@@ -93,7 +93,6 @@ export default function PreviewStep() {
       localStorage.removeItem('letterData');
       localStorage.removeItem('temp_id');
       const postLoginAction = { action: 'claim', shareCode: shareCode };
-      console.log('Finalizing anonymous letter. Setting postLoginAction:', postLoginAction);
       localStorage.setItem('postLoginAction', JSON.stringify(postLoginAction));
       updateLetterData({ shareCode: null });
       router.replace(`/manage/${managementToken}`);
