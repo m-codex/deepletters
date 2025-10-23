@@ -94,7 +94,7 @@ export default function LetterPage({
     <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
       <div className="text-center mb-12">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary-bg rounded-full mb-4">
-          <Mail className="w-8 h-8 text-btn-primary" />
+          <Mail className="w-8 h-8 text-accent" />
         </div>
         <h2 className="text-4xl text-primary mb-4">Your Letter is Ready!</h2>
         <p className="text-secondary text-lg">
