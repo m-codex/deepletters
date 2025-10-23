@@ -295,17 +295,17 @@ export default function Dashboard() {
   const Sidebar = () => (
     <aside className={`bg-secondary-bg text-primary p-6 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       <div className="flex-grow">
-        <button onClick={() => router.push('/create')} className="w-full bg-btn-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-btn-hover mb-8 flex items-center justify-center gap-2">
+        <button onClick={() => router.push('/create')} className="w-full bg-secondary-bg text-accent font-bold py-3 px-4 rounded-lg hover:bg-btn-hover mb-8 flex items-center justify-center gap-2">
           <Plus className="w-6 h-6" /> {isSidebarOpen && 'New Letter'}
         </button>
         <nav className="space-y-2">
-          <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
             <Send className="w-5 h-5" /> {isSidebarOpen && 'Sent'}
           </button>
-          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
             <Pencil className="w-5 h-5" /> {isSidebarOpen && 'Drafts'}
           </button>
-          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
+          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-btn-primary text-primary' : 'hover:btn-hover'}`}>
             <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
           </button>
           <div className="border-t border-border pt-4">
