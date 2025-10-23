@@ -295,7 +295,7 @@ export default function WriteStep() {
                     <button
                       onClick={handleSave}
                       disabled={saveStatus === 'saving'}
-                      className="px-4 py-1 text-sm bg-gradient-secondary-btn opacity-90 text-primary rounded hover:bg-btn-hover disabled:bg-gray-400 transition-colors"
+                      className="px-4 py-1 text-sm bg-gradient-secondary-btn hover:opacity-90 text-primary rounded hover:bg-btn-hover disabled:bg-gray-400 transition-colors"
                     >
                       {saveStatus === 'saving'
                         ? 'Saving...'
