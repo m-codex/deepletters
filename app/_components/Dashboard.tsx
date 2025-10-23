@@ -365,7 +365,7 @@ export default function Dashboard() {
               }}
             >
               {selectedFolderName || view}
-              {isFolderView && <Pencil className="w-5 h-5 text-secondary opacity-50 hover:opacity-100 transition-opacity" />}
+              
             </h1>
           )}
           <div>
