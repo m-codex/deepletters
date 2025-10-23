@@ -12,6 +12,18 @@ export default {
         serif: ["Quattrocento-Regular", "sans-serif"],
         heading: ["Quattrocento-Bold", "serif"],
       },
+
+      // --- Custom Gradients ---
+      backgroundImage: {
+        // Beispiel: Ein Gradient für primäre Buttons
+        'gradient-primary-btn': 'linear-gradient(to right, #8567DC, #7659CC)', 
+        // Beispiel: Ein Gradient für Texte (kann angepasst werden)
+        'gradient-text': 'linear-gradient(to right, #A19FD6, var(--color-primary))', 
+      },
+      // Diese Utility ist für Farbverlauf-Texte essentiell, um den Hintergrund auf den Text zu clippen
+      backgroundClip: {
+        'text': 'text',
+      },
       
       // --- Custom Colors ---
       colors: {
