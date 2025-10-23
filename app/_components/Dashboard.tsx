@@ -15,6 +15,7 @@ import {
   Trash2,
   Pencil,
   Check,
+  Mail,
   X,
 } from "lucide-react";
 import { Letter, LetterWithSubject } from "@/_lib/supabase";
