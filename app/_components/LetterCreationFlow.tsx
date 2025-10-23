@@ -33,7 +33,7 @@ function LetterCreationLayout({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-bg">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-btn-primary border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent"></div>
       </div>
     );
   }
@@ -48,7 +48,7 @@ function LetterCreationLayout({ children }: { children: React.ReactNode }) {
               <div
                 key={s}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  s === step ? 'w-12 bg-accent' : s < step ? 'w-8 bg-btn-primary' : 'w-8 bg-secondary-bg'
+                  s === step ? 'w-12 bg-accent' : s < step ? 'w-8 bg-accent/80' : 'w-8 bg-secondary-bg'
                 }`}
               />
             ))}
