@@ -447,7 +447,7 @@ export default function Dashboard() {
           <p className="text-sm text-gradient line-clamp-3">{letter.content}</p>
         </div>
         <div className="flex justify-between items-center mt-4">
-          <div className="text-xs text-secondary">
+          <div className="text-xs text-primary">
             {new Date(letter.created_at).toLocaleDateString()}
           </div>
           {isDraft ? (
