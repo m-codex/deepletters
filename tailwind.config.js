@@ -8,9 +8,9 @@ export default {
     extend: {
       // --- Custom Fonts ---
       fontFamily: {
-        body: ["QuattrocentoSans-Regular", "sans-serif"],
-        semibold: ["Quattrocento-Regular", "sans-serif"],
-        heading: ["InterTight-ExtraBold", "sans-serif"],
+        body: ["InterTight-Regular", "sans-serif"],
+        semibold: ["InterTight-SemiBold", "sans-serif"],
+        heading: ["InterTight-Bold", "sans-serif"],
       },
 
       // --- Custom Gradients ---
