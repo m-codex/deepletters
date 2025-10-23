@@ -21,6 +21,7 @@ import {
 import { Letter, LetterWithSubject } from "@/_lib/supabase";
 import LetterDetailModal from "./LetterDetailModal";
 import { useLetterData } from "./useLetterData";
+import Dialog from './Dialog';
 type View = "sent" | "received" | "drafts" | string;
 
 export default function Dashboard() {
@@ -39,38 +40,65 @@ export default function Dashboard() {
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editingFolderName, setEditingFolderName] = useState<string>("");
   const { updateLetterData } = useLetterData();
+  const [dialogState, setDialogState] = useState({
+    isOpen: false,
+    type: '', // 'deleteFolder', 'deleteDraft', 'newFolder'
+    title: '',
+    description: '',
+    inputValue: '',
+    confirmAction: () => {},
+  });
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/");
   };
 
-  const promptForNewFolder = () => {
-    const folderName = prompt("Enter a name for your new folder:");
-    if (folderName) {
-      handleNewFolder(folderName);
-    }
+  const closeDialog = () => {
+    setDialogState({ ...dialogState, isOpen: false });
   };
-    const handleDeleteFolder = async (folderId: string) => {
-    if (window.confirm("Are you sure you want to delete this folder? This action cannot be undone.")) {
-      try {
-        // First, delete all associations in folder_letters
-        const { error: assocError } = await supabase.from('folder_letters').delete().eq('folder_id', folderId);
-        if (assocError) throw assocError;
 
-        // Then, delete the folder itself
-        const { error: folderError } = await supabase.from('folders').delete().eq('id', folderId);
-        if (folderError) throw folderError;
+  const promptForNewFolder = () => {
+    setDialogState({
+      isOpen: true,
+      type: 'newFolder',
+      title: 'Create New Folder',
+      description: 'Enter a name for your new folder:',
+      inputValue: '',
+      confirmAction: () => handleNewFolder(dialogState.inputValue),
+    });
+  };
 
-        setFolders(prev => prev.filter(f => f.id !== folderId));
-        setView('sent'); // Reset view to default
-        setSelectedFolderName(null);
-        setEditingFolderId(null);
-      } catch (err) {
-        console.error("Error deleting folder:", err);
-        alert("Could not delete the folder. Please try again.");
-      }
+  const handleDeleteFolder = async (folderId: string) => {
+    setDialogState({
+      isOpen: true,
+      type: 'deleteFolder',
+      title: 'Delete Folder',
+      description: 'Are you sure you want to delete this folder? This action cannot be undone.',
+      confirmAction: () => confirmDeleteFolder(folderId),
+      inputValue: '',
+    });
+  };
+
+  const confirmDeleteFolder = async (folderId: string) => {
+    try {
+      // First, delete all associations in folder_letters
+      const { error: assocError } = await supabase.from('folder_letters').delete().eq('folder_id', folderId);
+      if (assocError) throw assocError;
+
+      // Then, delete the folder itself
+      const { error: folderError } = await supabase.from('folders').delete().eq('id', folderId);
+      if (folderError) throw folderError;
+
+      setFolders(prev => prev.filter(f => f.id !== folderId));
+      setView('sent'); // Reset view to default
+      setSelectedFolderName(null);
+      setEditingFolderId(null);
+    } catch (err) {
+      console.error("Error deleting folder:", err);
+      alert("Could not delete the folder. Please try again.");
     }
+    closeDialog();
   };
 
   const handleRenameFolder = async () => {
@@ -410,18 +438,28 @@ export default function Dashboard() {
       router.push('/create/write');
     };
 
-    const handleDeleteDraft = async (e: React.MouseEvent) => {
+    const handleDeleteDraft = async (e: React.MouseEvent, letterId: string) => {
       e.stopPropagation();
-      if (window.confirm('Are you sure you want to delete this draft?')) {
-        try {
-          const { error } = await supabase.from('letters').delete().eq('id', letter.id);
-          if (error) throw error;
-          setLetters(prev => prev.filter(l => l.id !== letter.id));
-        } catch (err) {
-          console.error('Error deleting draft:', err);
-          alert('Could not delete the draft. Please try again.');
-        }
+      setDialogState({
+        isOpen: true,
+        type: 'deleteDraft',
+        title: 'Delete Draft',
+        description: 'Are you sure you want to delete this draft?',
+        confirmAction: () => confirmDeleteDraft(letterId),
+        inputValue: '',
+      });
+    };
+
+    const confirmDeleteDraft = async (letterId: string) => {
+      try {
+        const { error } = await supabase.from('letters').delete().eq('id', letterId);
+        if (error) throw error;
+        setLetters(prev => prev.filter(l => l.id !== letterId));
+      } catch (err) {
+        console.error('Error deleting draft:', err);
+        alert('Could not delete the draft. Please try again.');
       }
+      closeDialog();
     };
 
     return (
@@ -459,7 +497,7 @@ export default function Dashboard() {
                 Continue
               </button>
               <button
-                onClick={handleDeleteDraft}
+                onClick={(e) => handleDeleteDraft(e, letter.id)}
                 className="text-sm bg-gradient-secondary-btn text-primary py-2 px-4 rounded-full hover:bg-red-600 transition-colors"
               >
                 <Trash2 className="w-5 h-5" />
@@ -547,6 +585,41 @@ export default function Dashboard() {
           onFolderAssign={handleFolderAssign}
         />
       )}
+      <Dialog
+        isOpen={dialogState.isOpen}
+        onClose={closeDialog}
+        title={dialogState.title}
+        description={dialogState.description}
+        actions={
+          <>
+            <button
+              onClick={closeDialog}
+              className="px-4 py-2 text-sm bg-secondary-bg text-primary rounded hover:bg-border transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                dialogState.confirmAction();
+                closeDialog();
+              }}
+              className="px-4 py-2 text-sm bg-accent text-primary rounded hover:opacity-90 transition-opacity"
+            >
+              Confirm
+            </button>
+          </>
+        }
+      >
+        {dialogState.type === 'newFolder' && (
+          <input
+            type="text"
+            value={dialogState.inputValue}
+            onChange={(e) => setDialogState({ ...dialogState, inputValue: e.target.value })}
+            className="w-full px-4 py-3 bg-primary-bg text-primary border border-border rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all"
+            placeholder="Folder name"
+          />
+        )}
+      </Dialog>
     </div>
   );
 }
