@@ -115,7 +115,7 @@ interface FeatureCardProps {
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
     <div className="bg-secondary-bg rounded-md p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="text-accent mb-4">{icon}</div>
+      <div className="text-btn-primary mb-4">{icon}</div>
       <h3 className="text-xl text-primary mb-2">{title}</h3>
       <p className="text-secondary">{description}</p>
     </div>
