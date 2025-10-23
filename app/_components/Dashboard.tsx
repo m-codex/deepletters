@@ -296,7 +296,7 @@ export default function Dashboard() {
   const Sidebar = () => (
     <aside className={`bg-secondary-bg text-primary p-6 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       <div className="flex-grow">
-        <button onClick={() => router.push('/create')} className="w-full bg-gradient-primary-btn hover:opacity-90 text-primary font-bold py-3 px-4 rounded-lg mb-8 flex items-center justify-center gap-2">
+        <button onClick={() => router.push('/create')} className="w-full bg-gradient-primary-btn hover:opacity-90 text-primary font-bold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2">
           <Send className="w-6 h-6" /> {isSidebarOpen && 'New Letter'}
         </button>
         <nav className="space-y-2">
@@ -356,7 +356,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <h1
-              className="text-4xl text-primary capitalize cursor-pointer flex items-center gap-2"
+              className="text-3xl text-primary capitalize cursor-pointer flex items-center gap-2"
               onClick={() => {
                 if (isFolderView && currentFolder) {
                   setEditingFolderId(currentFolder.id);
