@@ -68,7 +68,7 @@ export default function LandingPage() {
             or{' '}
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="text-btn-primary hover:underline"
+              className="text-accent hover:underline"
             >
               Log in
             </button>
