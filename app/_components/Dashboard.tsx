@@ -439,7 +439,7 @@ export default function Dashboard() {
             <h3 className="text-lg text-primary truncate pr-2">
               {isDraft ? (letter.content?.substring(0, 20) || 'Untitled Draft') : (letter.user_subject || letter.subject || 'No Subject')}
             </h3>
-            {!isDraft && <Pencil className="w-4 h-4 text-secondary" />}
+            
           </div>
           <p className="text-sm text-secondary mb-4">
             To: {letter.recipient_name || 'Anonymous'}
