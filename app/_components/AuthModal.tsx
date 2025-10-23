@@ -79,7 +79,7 @@ export default function AuthModal({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+              className="w-full px-4 py-3 bg-primary-bg text-primary border border-border rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all"
             />
           </div>
           <button
