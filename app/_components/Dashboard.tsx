@@ -296,24 +296,18 @@ export default function Dashboard() {
   const Sidebar = () => (
     <aside className={`bg-secondary-bg text-primary p-6 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       <div className="flex-grow">
-        <div className="flex items-center justify-between mb-3">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-tertiary-bg rounded-full">
-          <Mail className="w-8 h-8 text-accent" />
-        </div>
-        
-        <button onClick={() => router.push('/create')} className="bg-tertiary-bg text-primary py-3 px-4 rounded-lg hover:bg-btn-hover flex items-center justify-center gap-2">
-          {isSidebarOpen && 'New Letter'}
+        <button onClick={() => router.push('/create')} className="w-full bg-gradient-primary-btn hover:opacity-90 text-primary font-bold py-3 px-4 rounded-lg mb-8 flex items-center justify-center gap-2">
+          <Send className="w-6 h-6" /> {isSidebarOpen && 'New Letter'}
         </button>
-          </div>
         <nav className="space-y-2">
-          <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
-            <Send className="w-5 h-5" /> {isSidebarOpen && 'Sent'}
+          <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-tertiary-bg text-primary font-subheading' : ''}`}>
+            <Send className={`w-5 h-5 ${view === 'sent' ? 'text-accent' : ''}`} /> {isSidebarOpen && 'Sent'}
           </button>
-          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-btn-primary text-primary' : 'hover:btn-hover'}`}>
-            <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
+          <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-tertiary-bg text-primary font-subheading' : ''}`}>
+            <Inbox className={`w-5 h-5 ${view === 'received' ? 'text-accent' : ''}`} /> {isSidebarOpen && 'Received'}
           </button>
-          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
-            <Pencil className="w-5 h-5" /> {isSidebarOpen && 'Drafts'}
+          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-tertiary-bg text-primary font-subheading' : ''}`}>
+            <Pencil className={`w-5 h-5 ${view === 'drafts' ? 'text-accent' : ''}`} /> {isSidebarOpen && 'Drafts'}
           </button>
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
