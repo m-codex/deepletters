@@ -97,7 +97,7 @@ export default function LetterPage({
           <Mail className="w-8 h-8 text-accent" />
         </div>
         <h2 className="text-4xl text-primary mb-4">Your Letter is Ready!</h2>
-        <p className="text-secondary text-lg">
+        <p className="text-gradient text-lg">
           You can now share the link with the recipient.
         </p>
         <div className="flex flex-col gap-3 my-8">
