@@ -8,8 +8,8 @@ export default {
     extend: {
       // --- Custom Fonts ---
       fontFamily: {
-        body: ["InterTight-Regular", "sans-serif"],
-        semibold: ["InterTight-SemiBold", "sans-serif"],
+        btext: ["InterTight-Regular", "sans-serif"],
+        subheading: ["InterTight-SemiBold", "sans-serif"],
         heading: ["InterTight-Bold", "sans-serif"],
       },
 
