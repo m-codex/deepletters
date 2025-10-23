@@ -128,14 +128,14 @@ export default function LetterDetailModal({
               id="folder-select"
               value={selectedFolder || ''}
               onChange={(e) => handleFolderChange(e.target.value || null)}
-              className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-secondary rounded-md"
+              className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-border rounded-md"
             >
               <option value="">No folder</option>
               {folders.map(folder => (
                 <option key={folder.id} value={folder.id}>{folder.name}</option>
               ))}
             </select>
-            <button onClick={() => setIsCreatingFolder(true)} className="p-2  text-btn-primary rounded-md">
+            <button onClick={() => setIsCreatingFolder(true)} className="p-2  text-primary rounded-md">
               <Plus className="w-5 h-5" />
             </button>
           </div>
@@ -146,7 +146,7 @@ export default function LetterDetailModal({
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="New folder name"
-                className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-secondary rounded-md"
+                className="flex-grow w-full px-4 py-2 bg-primary-bg text-primary border border-border rounded-md"
               />
               <button onClick={handleCreateFolder} className="px-4 py-2 bg-btn-primary text-white rounded-md hover:bg-btn-hover">Create</button>
               <button onClick={() => setIsCreatingFolder(false)} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">Cancel</button>
@@ -155,13 +155,13 @@ export default function LetterDetailModal({
         </div>
 
         <div className="flex-grow overflow-y-auto p-6 bg-primary-bg rounded-md">
-          <p className="whitespace-pre-wrap font-serif text-lg text-primary">{letter.content}</p>
+          <p className="whitespace-pre-wrap text-lg text-primary">{letter.content}</p>
         </div>
 
         <div className="mt-6 flex justify-end gap-4">
           <button
             onClick={() => router.push(`/letter/${letter.share_code}`)}
-            className="px-6 py-2 bg-btn-primary text-white rounded-md hover:bg-btn-hover flex items-center gap-2"
+            className="px-6 py-2 bg-gradient-primary-btn hover:opacity-90 text-primary rounded-md flex items-center gap-2"
           >
             <Eye className="w-5 h-5" />
             View Letter
