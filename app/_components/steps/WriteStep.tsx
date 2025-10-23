@@ -216,7 +216,7 @@ export default function WriteStep() {
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 placeholder="Name"
-                className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                className="w-full px-4 py-3 bg-primary-bg text-primary border border-border rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all"
               />
             </div>
             <div className="mb-4">
@@ -229,7 +229,7 @@ export default function WriteStep() {
                 value={recipientName}
                 onChange={(e) => setRecipientName(e.target.value)}
                 placeholder="Name"
-                className="w-full px-4 py-3 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                className="w-full px-4 py-3 bg-primary-bg text-primary border border-border rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all"
               />
             </div>
             <button
@@ -256,7 +256,7 @@ export default function WriteStep() {
                         }}
                         onBlur={handleSenderNameSubmit}
                         autoFocus
-                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-border rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all"
                       />
                     ) : (
                       <p className="text-primary" onClick={() => setIsEditingName(true)}>
@@ -275,7 +275,7 @@ export default function WriteStep() {
                         }}
                         onBlur={handleRecipientNameSubmit}
                         autoFocus
-                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-secondary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all"
+                        className="w-full max-w-xs px-2 py-1 bg-primary-bg text-primary border border-border rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all"
                       />
                     ) : (
                       <p className="text-primary" onClick={() => setIsEditingRecipientName(true)}>
@@ -313,7 +313,7 @@ export default function WriteStep() {
                   onChange={(e) => updateLetterData({ content: e.target.value })}
                   placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
                   rows={12}
-                  className="w-full px-4 py-5 sm:px-8 sm:py-8 md:px-12 md:py-8 bg-primary-bg text-primary rounded-md focus:ring-2 focus:ring-btn-primary focus:border-transparent focus:outline-none transition-all resize-none font-serif text-lg"
+                  className="w-full px-4 py-5 sm:px-8 sm:py-8 md:px-12 md:py-8 bg-primary-bg text-primary rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all resize-none text-lg"
                 />
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-secondary">{letterData.content.split(/\s+/).filter(Boolean).length} words</p>
