@@ -85,7 +85,7 @@ export default function AuthModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-btn-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-btn-hover disabled:bg-gray-400 transition-all transform hover:scale-105"
+            className="w-full bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-4 rounded-lg disabled:bg-border transition-all transform hover:scale-105"
           >
             {loading ? 'Sending...' : 'Send Magic Link'}
           </button>
