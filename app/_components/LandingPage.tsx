@@ -64,8 +64,8 @@ export default function LandingPage() {
               Write Your Letter
             </button>
           </div>
-          <p className="mt-6 text-sm text-secondary">
-            Already have an account?{' '}
+          <p className="mt-6 text-base text-secondary">
+            or{' '}
             <button
               onClick={() => setIsAuthModalOpen(true)}
               className="text-btn-primary hover:underline"
