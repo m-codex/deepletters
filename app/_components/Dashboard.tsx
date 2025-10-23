@@ -311,17 +311,17 @@ export default function Dashboard() {
           </button>
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
-              <p className={`text-sm font-semibold text-secondary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</p>
+              <p className={`text-primary ${!isSidebarOpen && 'text-center'}`}>{isSidebarOpen ? 'Folders' : '📁'}</p>
               {isSidebarOpen && (
-                <button onClick={promptForNewFolder} className="text-btn-primary hover:text-btn-hover p-1 rounded-md">
-                  <Plus className="w-4 h-4" />
+                <button onClick={promptForNewFolder} className="text-primary hover:text-accent p-1 rounded-md">
+                  <Plus className="w-5 h-5" />
                 </button>
               )}
             </div>
             <div className="space-y-1">
               {folders.map(folder => (
-                <button key={folder.id} onClick={() => { setView(folder.id); setSelectedFolderName(folder.name); }} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-primary text-primary-bg' : 'hover:bg-primary-bg'}`}>
-                  <Folder className="w-5 h-5" /> {isSidebarOpen && <span className="truncate">{folder.name}</span>}
+                <button key={folder.id} onClick={() => { setView(folder.id); setSelectedFolderName(folder.name); }} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-tertiary-bg text-primary' : ''}`}>
+                  <Folder className={`w-5 h-5 ${view === folder.id ? 'text-accent' : ''}`} /> {isSidebarOpen && <span className="truncate">{folder.name}</span>}
                 </button>
               ))}
             </div>
@@ -444,25 +444,25 @@ export default function Dashboard() {
           <p className="text-sm text-secondary mb-4">
             To: {letter.recipient_name || 'Anonymous'}
           </p>
-          <p className="text-sm text-secondary line-clamp-3">{letter.content}</p>
+          <p className="text-sm text-gradient line-clamp-3">{letter.content}</p>
         </div>
         <div className="flex justify-between items-center mt-4">
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-border">
             {new Date(letter.created_at).toLocaleDateString()}
           </div>
           {isDraft ? (
             <div className="flex gap-2">
               <button
                 onClick={handleContinueDraft}
-                className="text-xs bg-btn-primary text-white py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+                className="text-sm bg-gradient-primary-btn hover:opacity-90 text-primary py-2 px-4 rounded-full transition-colors"
               >
                 Continue Draft
               </button>
               <button
                 onClick={handleDeleteDraft}
-                className="text-xs bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600 transition-colors"
+                className="text-sm bg-gradient-secondary-btn text-primary py-2 px-4 rounded-full hover:bg-red-600 transition-colors"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-5 h-5" />
               </button>
             </div>
           ) : (
@@ -471,7 +471,7 @@ export default function Dashboard() {
                 e.stopPropagation();
                 router.push(`/letter/${letter.share_code}`);
               }}
-              className="text-xs bg-btn-primary text-white py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+              className="text-sm bg-gradient-primary-btn hover:opacity-90 text-primary py-2 px-4 rounded-full hover:bg-btn-hover transition-colors"
             >
               View Letter
             </button>
