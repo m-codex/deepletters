@@ -5,12 +5,12 @@
 @layer base {
   :root,
   :host {
-    --color-primary-bg: #262626;
-    --color-secondary-bg: #363636;
-    --color-tertiary-bg: #464646;
-    --color-primary: #F0EEED;
+    --color-primary-bg: #11111f;
+    --color-secondary-bg: #1c1d2e;
+    --color-tertiary-bg: #222333;
+    --color-primary: #E2E4E8;
     --color-secondary: #b3b3b3;
-    --color-border: #666666;
+    --color-border: #63a3a52;
     --color-white: #FFFFFF;
     --color-accent: #8062D8;
     --color-btn-primary: #8c7f76; /* #af9888 */
