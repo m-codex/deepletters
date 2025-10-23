@@ -17,7 +17,7 @@ export default {
       backgroundImage: {
         // Beispiel: Ein Gradient für primäre Buttons #8567DC, #7659CC
         'gradient-primary-btn': 'linear-gradient(to right, #5f4bac, #483C8A)',
-        'gradient-secondary-btn': 'linear-gradient(to right, #5f4bac, #483C8A)',
+        'gradient-secondary-btn': 'linear-gradient(to right, #222333, #313242)',
         // Beispiel: Ein Gradient für Texte (kann angepasst werden)
         'gradient-text': 'linear-gradient(to right, #A19FD6, var(--color-primary))', 
       },
