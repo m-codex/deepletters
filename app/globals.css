@@ -34,8 +34,8 @@
   }
 
   @font-face {
-    font-family: "InterTight-ExtraBold";
-    src: url("/fonts/InterTight-ExtraBold.ttf") format("truetype");
+    font-family: "InterTight-Bold";
+    src: url("/fonts/InterTight-Bold.ttf") format("truetype");
   }
   @font-face {
     font-family: "InterTight-Regular";
