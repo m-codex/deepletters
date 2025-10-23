@@ -8,7 +8,7 @@ export default {
     extend: {
       // --- Custom Fonts ---
       fontFamily: {
-        btext: ["InterTight-Regular", "sans-serif"],
+        text: ["InterTight-Regular", "sans-serif"],
         subheading: ["InterTight-SemiBold", "sans-serif"],
         heading: ["InterTight-Bold", "sans-serif"],
       },
