@@ -32,7 +32,7 @@ export default function StepWrapper({
           {icon}
         </div>
         <h2 className="text-4xl text-primary mb-4">{title}</h2>
-        <p className="text-secondary text-lg mb-2">{description}</p>
+        <p className="text-gradient text-lg mb-2">{description}</p>
       </div>
 
       <div>{children}</div>
@@ -53,7 +53,7 @@ export default function StepWrapper({
             disabled={isNextDisabled}
             className={`${
               secondaryButtonText ? 'flex-1' : 'w-full'
-            } p-4 bg-btn-primary text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+            } p-4 bg-gradient-primary-btn hover:opacity-75 text-primary rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
           >
             {buttonText}
           </button>
