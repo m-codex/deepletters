@@ -43,7 +43,7 @@ export default function StepWrapper({
             <button
               onClick={onSecondaryClick}
               disabled={isSecondaryDisabled}
-              className="flex-1 py-4 bg-gradient-secondary-btn text-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-4 bg-gradient-secondary-btn hover:opacity-75 text-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {secondaryButtonText}
             </button>
