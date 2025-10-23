@@ -297,11 +297,11 @@ export default function Dashboard() {
     <aside className={`bg-secondary-bg text-primary p-6 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       <div className="flex-grow">
         <div className="flex items center justify-between">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary-bg rounded-full">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-bg rounded-full">
           <Mail className="w-8 h-8 text-accent" />
         </div>
         
-        <button onClick={() => router.push('/create')} className="bg-secondary-bg text-accent font-bold py-3 px-4 rounded-lg hover:bg-btn-hover mb-8 flex items-center justify-center gap-2">
+        <button onClick={() => router.push('/create')} className="bg-btn-primary text-primary py-3 px-4 rounded-lg hover:bg-btn-hover mb-8 flex items-center justify-center gap-2">
           <Plus className="w-6 h-6" /> {isSidebarOpen && 'New Letter'}
         </button>
           </div>
