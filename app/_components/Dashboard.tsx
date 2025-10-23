@@ -356,7 +356,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <h1
-              className="text-primary capitalize cursor-pointer flex items-center gap-2"
+              className="text-4xl text-primary capitalize cursor-pointer flex items-center gap-2"
               onClick={() => {
                 if (isFolderView && currentFolder) {
                   setEditingFolderId(currentFolder.id);
