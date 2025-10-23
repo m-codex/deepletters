@@ -34,16 +34,16 @@
   }
 
   @font-face {
-    font-family: "Quattrocento-Bold";
-    src: url("/fonts/Quattrocento-Bold.ttf") format("truetype");
+    font-family: "InterTight-ExtraBold";
+    src: url("/fonts/InterTight-ExtraBold.ttf") format("truetype");
   }
   @font-face {
-    font-family: "QuattrocentoSans-Regular";
-    src: url("/fonts/QuattrocentoSans-Regular.ttf") format("truetype");
+    font-family: "InterTight-Regular";
+    src: url("/fonts/InterTight-Regular.ttf") format("truetype");
   }
   @font-face {
-    font-family: "Quattrocento-Regular";
-    src: url("/fonts/Quattrocento-Regular.ttf") format("truetype");
+    font-family: "InterTight-SemiBold";
+    src: url("/fonts/InterTight-SemiBold.ttf") format("truetype");
   }
   body {
     @apply font-sans bg-primary-bg;
