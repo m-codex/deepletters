@@ -316,7 +316,7 @@ export default function WriteStep() {
                   value={letterData.content}
                   onChange={(e) => updateLetterData({ content: e.target.value })}
                   placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
-                  rows={12}
+                  rows={16}
                   className="w-full px-4 py-5 sm:px-8 sm:py-8 md:px-12 md:py-8 bg-primary-bg text-primary rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all resize-none text-lg"
                 />
                 <div className="flex justify-between items-center">
