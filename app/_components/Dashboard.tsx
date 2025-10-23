@@ -309,11 +309,11 @@ export default function Dashboard() {
           <button onClick={() => { setView('sent'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'sent' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
             <Send className="w-5 h-5" /> {isSidebarOpen && 'Sent'}
           </button>
-          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
-            <Pencil className="w-5 h-5" /> {isSidebarOpen && 'Drafts'}
-          </button>
           <button onClick={() => { setView('received'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'received' ? 'bg-btn-primary text-primary' : 'hover:btn-hover'}`}>
             <Inbox className="w-5 h-5" /> {isSidebarOpen && 'Received'}
+          </button>
+          <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-btn-primary text-primary' : 'hover:bg-btn-hover'}`}>
+            <Pencil className="w-5 h-5" /> {isSidebarOpen && 'Drafts'}
           </button>
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
