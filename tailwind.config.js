@@ -15,8 +15,8 @@ export default {
 
       // --- Custom Gradients ---
       backgroundImage: {
-        // Beispiel: Ein Gradient für primäre Buttons
-        'gradient-primary-btn': 'linear-gradient(to right, #8567DC, #7659CC)', 
+        // Beispiel: Ein Gradient für primäre Buttons #8567DC, #7659CC
+        'gradient-primary-btn': 'linear-gradient(to right, #5f4bac, #483C8A)', 
         // Beispiel: Ein Gradient für Texte (kann angepasst werden)
         'gradient-text': 'linear-gradient(to right, #A19FD6, var(--color-primary))', 
       },
