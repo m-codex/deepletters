@@ -48,7 +48,7 @@ function LetterCreationLayout({ children }: { children: React.ReactNode }) {
               <div
                 key={s}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  s === step ? 'w-12 bg-accent' : s < step ? 'w-8 bg-accent/80' : 'w-8 bg-secondary-bg'
+                  s === step ? 'w-12 bg-accent' : s < step ? 'w-8 bg-accent opacity-75' : 'w-8 bg-secondary-bg'
                 }`}
               />
             ))}
