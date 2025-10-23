@@ -442,7 +442,7 @@ export default function Dashboard() {
       >
         <div>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold text-lg text-primary truncate pr-2">
+            <h3 className="text-lg text-primary truncate pr-2">
               {isDraft ? (letter.content?.substring(0, 20) || 'Untitled Draft') : (letter.user_subject || letter.subject || 'No Subject')}
             </h3>
             {!isDraft && <Pencil className="w-4 h-4 text-secondary" />}
@@ -460,13 +460,13 @@ export default function Dashboard() {
             <div className="flex gap-2">
               <button
                 onClick={handleContinueDraft}
-                className="text-xs bg-btn-primary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+                className="text-xs bg-btn-primary text-white py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
               >
                 Continue Draft
               </button>
               <button
                 onClick={handleDeleteDraft}
-                className="text-xs bg-red-500 text-white font-semibold py-1 px-3 rounded-full hover:bg-red-600 transition-colors"
+                className="text-xs bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -477,7 +477,7 @@ export default function Dashboard() {
                 e.stopPropagation();
                 router.push(`/letter/${letter.share_code}`);
               }}
-              className="text-xs bg-btn-primary text-white font-semibold py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
+              className="text-xs bg-btn-primary text-white py-1 px-3 rounded-full hover:bg-btn-hover transition-colors"
             >
               View Letter
             </button>
