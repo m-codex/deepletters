@@ -349,14 +349,14 @@ export default function Dashboard() {
                 type="text"
                 value={editingFolderName}
                 onChange={(e) => setEditingFolderName(e.target.value)}
-                className="text-3xl font-bold text-primary bg-transparent border-b-2 border-btn-primary focus:outline-none"
+                className="font-heading text-3xl text-primary bg-transparent border-b-2 border-border focus:outline-none"
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder()}
               />
             </div>
           ) : (
             <h1
-              className="text-3xl font-bold text-primary capitalize cursor-pointer flex items-center gap-2"
+              className="text-primary capitalize cursor-pointer flex items-center gap-2"
               onClick={() => {
                 if (isFolderView && currentFolder) {
                   setEditingFolderId(currentFolder.id);
@@ -372,7 +372,7 @@ export default function Dashboard() {
             {editingFolderId === view && (
               <button
                 onClick={() => handleDeleteFolder(editingFolderId)}
-                className="bg-btn-secondary text-primary-bg font-bold py-2 px-4 rounded-lg flex items-center gap-2"
+                className="bg-gradient-secondary-btn text-primary font-bold py-2 px-4 rounded-lg flex items-center gap-2"
               >
                 <Trash2 className="w-5 h-5" /> Delete Folder
               </button>
@@ -381,13 +381,13 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {loading ? (
-            <p className="text-secondary">Loading letters...</p>
+            <p className="text-gradient">Loading letters...</p>
           ) : letters.length > 0 ? (
           letters.map(letter => (
             <LetterCard key={letter.id} letter={letter} />
           ))
         ) : (
-          <p className="text-secondary">No letters found in this view.</p>
+          <p className="text-gradient">No letters found in this view.</p>
         )}
       </div>
     </main>
