@@ -25,12 +25,12 @@ export default function LandingPage() {
           <div className="inline-flex items-center justify-center w-24 h-24 bg-secondary-bg rounded-full mb-8">
           <Mail className="w-12 h-12 text-accent" />
         </div>
-          <h1 className="text-4xl md:text-6xl text-white mb-6 leading-tight text-balance">
+          <h1 className="font-header text-4xl md:text-6xl text-white mb-6 leading-tight text-balance">
             Say it with deepletters.org
           </h1> {/*old: Send meaningful letters */}
           
 
-          <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto text-balance">
+          <p className="font-base text-xl text-gradient mb-12 max-w-2xl mx-auto text-balance">
             Combine your words and a beautiful soundtrack to make your message memorable.
           </p>
 
@@ -59,7 +59,7 @@ export default function LandingPage() {
                 }
                 router.push('/create/write');
               }}
-              className="px-8 py-4 bg-gradient-primary-btn text-white rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="font-semibold bg-gradient-primary-btn text-white px-8 py-4 rounded-md text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               Write Your Letter
             </button>
@@ -115,9 +115,9 @@ interface FeatureCardProps {
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
     <div className="bg-secondary-bg rounded-md p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="text-btn-primary mb-4">{icon}</div>
-      <h3 className="text-xl text-primary mb-2">{title}</h3>
-      <p className="text-secondary">{description}</p>
+      <div className="text-accent mb-4">{icon}</div>
+      <h3 className="font-semibold text-xl text-primary mb-2">{title}</h3>
+      <p className="font-body text-secondary">{description}</p>
     </div>
   );
 }
