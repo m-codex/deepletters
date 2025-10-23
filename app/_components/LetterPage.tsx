@@ -117,7 +117,7 @@ export default function LetterPage({
                 copyToClipboard();
               }
             }}
-            className="flex-1 py-3 px-4 bg-gradient-primary-bg text-primary hover:opacity-90 rounded-md text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+            className="flex-1 py-3 px-4 bg-gradient-primary-btn text-primary hover:opacity-90 rounded-md text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
           >
             {copied ? (
               <>
@@ -135,7 +135,7 @@ export default function LetterPage({
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-3 px-4 bg-gradient-secondary-bg hover:opacity-90 text-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 py-3 px-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 transition-colors"
           >
             <Eye className="w-5 h-5" />
             View Letter
@@ -151,7 +151,7 @@ export default function LetterPage({
         {user ? (
           <button
             onClick={() => router.push('/dashboard')}
-            className="bg-gradient-primary-bg hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+            className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
           >
             <LayoutDashboard className="w-5 h-5" />
             Go to Dashboard
@@ -159,7 +159,7 @@ export default function LetterPage({
         ) : (
           <button
             onClick={() => setIsAuthModalOpen(true)}
-            className="bg-gradient-primary-bg hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+            className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
           >
             <Save className="w-5 h-5" />
             Sign Up or Log In
@@ -172,7 +172,7 @@ export default function LetterPage({
           localStorage.removeItem('lastFinalizedShareCode');
           router.push('/');
         }}
-        className="w-full mt-8 py-4 bg-gradient-secondary-bg hover:opacity-90 text-primary rounded-md font-semibold text-lg  transition-colors"
+        className="w-full mt-8 py-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md font-semibold text-lg  transition-colors"
       >
         Create Another Letter
       </button>
