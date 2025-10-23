@@ -320,7 +320,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-1">
               {folders.map(folder => (
-                <button key={folder.id} onClick={() => { setView(folder.id); setSelectedFolderName(folder.name); }} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-tertiary-bg text-primary' : ''}`}>
+                <button key={folder.id} onClick={() => { setView(folder.id); setSelectedFolderName(folder.name); }} className={`w-full flex items-center gap-3 p-3 rounded-md text-sm ${view === folder.id ? 'bg-tertiary-bg text-primary font-subheading' : ''}`}>
                   <Folder className={`w-5 h-5 ${view === folder.id ? 'text-accent' : ''}`} /> {isSidebarOpen && <span className="truncate">{folder.name}</span>}
                 </button>
               ))}
