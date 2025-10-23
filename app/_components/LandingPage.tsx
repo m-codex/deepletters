@@ -59,7 +59,7 @@ export default function LandingPage() {
                 }
                 router.push('/create/write');
               }}
-              className="font-text bg-gradient-primary-btn text-white px-8 py-4 rounded-md text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="font-text bg-gradient-primary-btn text-primary px-8 py-4 rounded-md text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               Write Your Letter
             </button>
