@@ -234,7 +234,7 @@ export default function WriteStep() {
             </div>
             <button
               type="submit"
-              className="mt-4 px-6 py-2 bg-gradient-primary-bg text-primary hiver:opacity-90 rounded"
+              className="mt-4 px-6 py-2 bg-gradient-primary-btn text-primary hiver:opacity-90 rounded"
             >
               Save Names
             </button>
