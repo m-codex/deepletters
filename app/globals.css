@@ -46,7 +46,7 @@
     src: url("/fonts/InterTight-SemiBold.ttf") format("truetype");
   }
   body {
-    @apply font-body bg-primary-bg;
+    @apply font-text bg-primary-bg;
   }
   h1,
   h2,
