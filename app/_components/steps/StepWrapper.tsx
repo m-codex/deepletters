@@ -53,7 +53,7 @@ export default function StepWrapper({
             disabled={isNextDisabled}
             className={`${
               secondaryButtonText ? 'flex-1' : 'w-full'
-            } p-4 bg-gradient-primary-btn hover:opacity-90 text-primary rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+            } p-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
           >
             {buttonText}
           </button>
