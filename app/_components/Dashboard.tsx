@@ -441,7 +441,7 @@ export default function Dashboard() {
             </h3>
             
           </div>
-          <p className="text-sm text-secondary mb-4">
+          <p className="text-sm font-subheading text-secondary mb-4">
             To: {letter.recipient_name || 'Anonymous'}
           </p>
           <p className="text-sm text-gradient line-clamp-3">{letter.content}</p>
