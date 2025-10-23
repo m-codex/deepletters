@@ -60,3 +60,9 @@
   @apply text-accent;
   }
 }
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-text bg-clip-text text-transparent;
+  }
+}
