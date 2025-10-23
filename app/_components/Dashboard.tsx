@@ -456,7 +456,7 @@ export default function Dashboard() {
                 onClick={handleContinueDraft}
                 className="text-sm bg-gradient-primary-btn hover:opacity-90 text-primary py-2 px-4 rounded-full transition-colors"
               >
-                Continue Draft
+                Continue
               </button>
               <button
                 onClick={handleDeleteDraft}
