@@ -119,9 +119,13 @@ export default function WriteStep() {
           .single();
       } else {
         // Create new draft
+        const letterPayloadWithShareCode = {
+          ...letterPayload,
+          share_code: shortUUID.generate(),
+        };
         result = await supabase
           .from('letters')
-          .insert(letterPayload)
+          .insert(letterPayloadWithShareCode)
           .select()
           .single();
       }
