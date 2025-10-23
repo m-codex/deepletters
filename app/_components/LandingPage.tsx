@@ -30,7 +30,7 @@ export default function LandingPage() {
           </h1> {/*old: Send meaningful letters */}
           
 
-          <p className="font-base text-xl text-gradient mb-12 max-w-2xl mx-auto text-balance">
+          <p className="font-body text-xl text-gradient mb-12 max-w-2xl mx-auto text-balance">
             Combine your words and a beautiful soundtrack to make your message memorable.
           </p>
 
