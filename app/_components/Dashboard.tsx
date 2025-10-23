@@ -13,7 +13,7 @@ import {
   Loader2,
   Settings,
   Trash2,
-  Pencil,
+  StickyNote,
   Check,
   Mail,
   X,
@@ -307,7 +307,7 @@ export default function Dashboard() {
             <Inbox className={`w-5 h-5 ${view === 'received' ? 'text-accent' : ''}`} /> {isSidebarOpen && 'Received'}
           </button>
           <button onClick={() => { setView('drafts'); setSelectedFolderName(null); }} className={`w-full flex items-center gap-3 p-3 rounded-md ${view === 'drafts' ? 'bg-tertiary-bg text-primary font-subheading' : ''}`}>
-            <Pencil className={`w-5 h-5 ${view === 'drafts' ? 'text-accent' : ''}`} /> {isSidebarOpen && 'Drafts'}
+            <StickyNote className={`w-5 h-5 ${view === 'drafts' ? 'text-accent' : ''}`} /> {isSidebarOpen && 'Drafts'}
           </button>
           <div className="border-t border-border pt-4">
             <div className="flex items-center justify-between mb-2">
