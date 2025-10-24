@@ -498,7 +498,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={(e) => handleDeleteDraft(e, letter.id)}
-                className="text-sm bg-gradient-secondary-btn text-primary py-2 px-4 rounded-full hover:bg-red-600 transition-colors"
+                className="text-sm text-primary rounded-full hover:bg-red-600 transition-colors"
               >
                 <Trash2 className="w-5 h-5" />
               </button>
