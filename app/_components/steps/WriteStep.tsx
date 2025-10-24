@@ -8,6 +8,7 @@ import StepWrapper from './StepWrapper';
 import { useSupabase } from '../SupabaseProvider';
 import shortUUID from 'short-uuid';
 import type { User } from '@supabase/supabase-js';
+import Dialog from '../Dialog';
 
 export default function WriteStep() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function WriteStep() {
   const [isEditingRecipientName, setIsEditingRecipientName] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
 
   useEffect(() => {
     // Pre-fill sender name from localStorage as a default.
@@ -156,9 +158,10 @@ export default function WriteStep() {
   };
 
   const handleDiscard = async () => {
-    const confirmed = window.confirm('Are you sure you want to discard this draft? This action cannot be undone.');
-    if (!confirmed) return;
+    setIsDiscardConfirmOpen(true);
+  };
 
+  const confirmDiscard = async () => {
     if (user && letterData.id) {
       // Logged-in user: delete draft from the database
       try {
@@ -186,6 +189,7 @@ export default function WriteStep() {
     localStorage.removeItem('letterData');
     setRecipientName('');
     setIsRecipientNameSet(false);
+    setIsDiscardConfirmOpen(false);
   };
 
   const toggleTheme = () => {
@@ -201,6 +205,28 @@ export default function WriteStep() {
       onNext={handleNext}
       isNextDisabled={!letterData.content.trim() || isSaving}
     >
+      <Dialog
+        isOpen={isDiscardConfirmOpen}
+        onClose={() => setIsDiscardConfirmOpen(false)}
+        title="Discard Draft"
+        description="Are you sure you want to discard this draft? This action cannot be undone."
+        actions={
+          <>
+            <button
+              onClick={() => setIsDiscardConfirmOpen(false)}
+              className="px-4 py-2 text-sm bg-secondary-bg text-primary rounded hover:bg-border transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDiscard}
+              className="px-4 py-2 text-sm bg-accent text-red-500 rounded hover:opacity-90 transition-opacity"
+            >
+              Discard
+            </button>
+          </>
+        }
+      />
       <div className="bg-secondary-bg shadow-xl px-4 py-8 md:p-12 relative">
         {!isNameSet || !isRecipientNameSet ? (
           <form
