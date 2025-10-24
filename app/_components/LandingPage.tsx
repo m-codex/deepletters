@@ -21,7 +21,7 @@ export default function LandingPage() {
 
 
       <main>
-        <section className="container mx-auto px-6 py-16 sm:py-24 text-center bg-[radial-gradient(ellipse_at_center,_#E2E4E833_0%,_transparent_50%)]">
+        <section className="container mx-auto px-6 py-16 sm:py-24 text-center bg-[radial-gradient(ellipse_at_center,_#ffffff26_0%,_transparent_50%)]">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-secondary-bg rounded-full mb-8">
           <Mail className="w-12 h-12 text-accent" />
         </div>
