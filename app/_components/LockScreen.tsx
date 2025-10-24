@@ -54,6 +54,9 @@ export default function LockScreen({ sitePassword }: LockScreenProps) {
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-primary-bg">
       <div className="bg-secondary-bg p-8 rounded-lg shadow-xl">
+         <div className="inline-flex items-center justify-center w-24 h-24 bg-secondary-bg rounded-full mb-8">
+          <Mail className="w-12 h-12 text-accent" />
+        </div>
         <h1 className="text-2xl text-white mb-4 text-center">Enter Password</h1>
         <form onSubmit={handleSubmit}>
           <input
