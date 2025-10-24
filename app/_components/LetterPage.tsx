@@ -176,7 +176,7 @@ export default function LetterPage({
           localStorage.removeItem('lastFinalizedShareCode');
           router.push('/');
         }}
-        className="w-full mt-8 py-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md text-lg  transition-colors"
+        className="w-full mt-3 py-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md text-lg  transition-colors"
       >
         Create Another Letter
       </button>
