@@ -1,7 +1,6 @@
 export type Letter = {
   id:string;
   content: string | null;
-  theme: 'light' | 'dark';
   music_url: string | null;
   music_volume: number | null;
   share_code: string;

@@ -149,7 +149,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
   }
 
   return (
-    <div className={`theme-${letter.theme}`}>
+    <div>
       <div className="flex justify-center text-center p-10 bg-primary-bg text-primary">
         <div className="animate-fadeIn max-w-4xl w-full">
           <div className="w-24 h-24 bg-secondary-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">

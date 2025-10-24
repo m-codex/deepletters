@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { PenLine, Sun, Moon } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 import { useLetterData } from '../useLetterData';
 import StepWrapper from './StepWrapper';
 import { useSupabase } from '../SupabaseProvider';
@@ -110,7 +110,6 @@ export default function WriteStep() {
           content: content,
           sender_name: senderName,
           recipient_name: recipientName,
-          theme: letterData.theme,
           sender_id: user.id,
           status: 'draft',
         };
@@ -180,7 +179,6 @@ export default function WriteStep() {
       content: '',
       senderName: '',
       recipientName: '',
-      theme: 'light',
       musicUrl: null,
       management_token: null,
       temp_id: null,
@@ -207,7 +205,6 @@ export default function WriteStep() {
       content: '',
       senderName: '',
       recipientName: '',
-      theme: 'light',
       musicUrl: null,
       management_token: null,
       temp_id: null,
@@ -219,9 +216,6 @@ export default function WriteStep() {
     setIsDiscardConfirmOpen(false);
   };
 
-  const toggleTheme = () => {
-    updateLetterData({ theme: letterData.theme === 'light' ? 'dark' : 'light' });
-  };
 
   return (
     <StepWrapper
@@ -374,17 +368,6 @@ export default function WriteStep() {
                 />
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-secondary">{letterData.content.split(/\s+/).filter(Boolean).length} words</p>
-                  <button
-                    onClick={toggleTheme}
-                    className="p-2 rounded-full hover:bg-secondary-bg"
-                    aria-label="Toggle Theme"
-                  >
-                    {letterData.theme === 'light' ? (
-                      <Sun className="w-5 h-5 text-secondary" />
-                    ) : (
-                      <Moon className="w-5 h-5 text-secondary" />
-                    )}
-                  </button>
                 </div>
               </div>
             </>

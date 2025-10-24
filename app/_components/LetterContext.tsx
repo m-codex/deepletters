@@ -13,7 +13,6 @@ export type LetterData = {
   musicVolume: number;
   finalized_at: string | null;
   management_token: string | null;
-  theme: 'light' | 'dark';
   temp_id: string | null;
 };
 
@@ -35,7 +34,6 @@ const initialLetterData: LetterData = {
   musicVolume: 0.5,
   finalized_at: null,
   management_token: null,
-  theme: 'light',
   temp_id: null,
 };
 
