@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import SupabaseProvider from "@/_components/SupabaseProvider";
 import { LetterProvider } from "@/_components/LetterContext";
+import LockScreen from "@/_components/LockScreen";
 
 export const metadata: Metadata = {
   title: "Deepletters - Send meaningful letters",
@@ -70,9 +71,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const sitePassword = process.env.SITE_WIDE_PASSWORD;
+
   return (
     <html lang="en">
       <body>
+        <LockScreen sitePassword={sitePassword} />
         <SupabaseProvider>
           <LetterProvider>{children}</LetterProvider>
         </SupabaseProvider>
