@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     `;
 
     const { data, error } = await resend.emails.send({
-      from: 'Deep Letters <noreply@deepletters.org>',
+      from: 'User of deepletters.org <noreply@letters.deepletters.org>',
       to: [to],
       subject: subject,
       html: emailHtml,
