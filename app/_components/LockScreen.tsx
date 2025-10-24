@@ -14,7 +14,7 @@ interface LockScreenProps {
 
 export default function LockScreen({ sitePassword }: LockScreenProps) {
   const [password, setPassword] = useState("");
-  const [isUnlocked, setIsUnlocked]_useState < boolean | null > null; // null means 'checking'
+  const [isUnlocked, setIsUnlocked] = useState<boolean | null>(null); // null means 'checking'
 
   useEffect(() => {
     const unlockedInStorage = localStorage.getItem(UNLOCK_KEY) === "true";
