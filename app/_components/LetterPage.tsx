@@ -104,6 +104,30 @@ export default function LetterPage({
 
         <EmailForm shareLink={shareUrl} />
 
+        <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
+        <h3 className="text-2xl font-bold text-primary mb-3">Save Your Letters</h3>
+        <p className="text-secondary mb-6">
+          {user ? "This letter is saved to your dashboard because you are the sender." : "Create a free account or log in to save this letter and manage all your correspondence in one place."}
+        </p>
+        {user ? (
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Go to Dashboard
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+          >
+            <Save className="w-5 h-5" />
+            Sign Up or Log In
+          </button>
+        )}
+      </div>
+
         <div className="flex flex-col gap-3 my-8">
           <button
             onClick={async () => {
@@ -145,30 +169,6 @@ export default function LetterPage({
             View Letter
           </a>
         </div>
-      </div>
-
-      <div className="mt-12 p-8 bg-secondary-bg rounded-lg shadow-inner text-center">
-        <h3 className="text-2xl font-bold text-primary mb-3">Save Your Letters</h3>
-        <p className="text-secondary mb-6">
-          {user ? "This letter is saved to your dashboard because you are the sender." : "Create a free account or log in to save this letter and manage all your correspondence in one place."}
-        </p>
-        {user ? (
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            Go to Dashboard
-          </button>
-        ) : (
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
-          >
-            <Save className="w-5 h-5" />
-            Sign Up or Log In
-          </button>
-        )}
       </div>
 
       <button
