@@ -76,7 +76,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LockScreen sitePassword={sitePassword} />
+        {sitePassword && <LockScreen sitePassword={sitePassword} />}
         <SupabaseProvider>
           <LetterProvider>{children}</LetterProvider>
         </SupabaseProvider>

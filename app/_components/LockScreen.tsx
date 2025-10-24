@@ -9,51 +9,45 @@ interface LockScreenProps {
   // This is a security risk and is only acceptable for a temporary,
   // low-security lock screen as requested.
   // For production use, a server-side check (e.g., via middleware or an API route) is required.
-  sitePassword?: string;
+  sitePassword: string;
 }
 
 export default function LockScreen({ sitePassword }: LockScreenProps) {
-  // Initialize state based on sessionStorage to avoid "flash of unlocked content".
-  // On the server, it will always be locked if a password is set.
-  // On the client, it will be unlocked if the session key is present.
-  // This will cause a hydration mismatch, which is acceptable for this use case
-  // as it prevents the content from flashing.
-  const [unlocked, setUnlocked] = useState(() => {
-    if (typeof window === 'undefined' || !sitePassword) {
-      return !sitePassword;
-    }
-    return sessionStorage.getItem(UNLOCK_KEY) === 'true';
-  });
-
   const [password, setPassword] = useState("");
+  const [isUnlocked, setIsUnlocked]_useState < boolean | null > null; // null means 'checking'
 
-  // This effect is a fallback and ensures we handle the case where
-  // the component mounts on the client without the server render,
-  // or if the sitePassword prop changes.
   useEffect(() => {
-    if (!sitePassword) {
-      setUnlocked(true);
-      return;
-    }
-    const isUnlocked = sessionStorage.getItem(UNLOCK_KEY) === "true";
-    if (isUnlocked) {
-      setUnlocked(true);
-    }
-  }, [sitePassword]);
+    const unlockedInStorage = localStorage.getItem(UNLOCK_KEY) === "true";
+    setIsUnlocked(unlockedInStorage);
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === UNLOCK_KEY) {
+        setIsUnlocked(event.newValue === "true");
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === sitePassword) {
-      sessionStorage.setItem(UNLOCK_KEY, "true");
-      setUnlocked(true);
+      localStorage.setItem(UNLOCK_KEY, "true");
+      setIsUnlocked(true);
     } else {
       alert("Incorrect password");
       setPassword("");
     }
   };
 
-  if (unlocked) {
+  if (isUnlocked === null || isUnlocked) {
+    // Render nothing while checking or if the site is unlocked.
+    // This prevents the "flash" of the lock screen.
     return null;
   }
 
