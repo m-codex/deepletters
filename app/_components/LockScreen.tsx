@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Mail } from 'lucide-react';
 
 const UNLOCK_KEY = "site_unlocked";
 
