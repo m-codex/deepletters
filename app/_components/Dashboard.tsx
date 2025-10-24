@@ -65,7 +65,7 @@ export default function Dashboard() {
       title: 'Create New Folder',
       description: 'Enter a name for your new folder:',
       inputValue: '',
-      confirmAction: () => handleNewFolder(dialogState.inputValue),
+      confirmAction: () => {}, // This will be handled by the button's onClick
     });
   };
 
@@ -600,7 +600,11 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => {
-                dialogState.confirmAction();
+                if (dialogState.type === 'newFolder') {
+                  handleNewFolder(dialogState.inputValue);
+                } else {
+                  dialogState.confirmAction();
+                }
                 closeDialog();
               }}
               className="px-4 py-2 text-sm bg-accent text-primary rounded hover:opacity-90 transition-opacity"
