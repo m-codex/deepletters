@@ -99,7 +99,7 @@ export default function EmailForm({ shareLink }: EmailFormProps) {
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            'Send Email'
+            <Send className="w-5 h-5" /> 'Send Email'
           )}
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
