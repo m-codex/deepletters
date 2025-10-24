@@ -21,7 +21,7 @@ export default function LandingPage() {
 
 
       <main>
-        <section className="container mx-auto px-6 py-16 sm:py-24 text-center bg-radial-[at_50%_75%] from-tertiary-bg to-transparent">
+        <section className="container mx-auto px-6 py-16 sm:py-24 text-center bg-radial-[at_50%_75%] from-tertiary-bg to-primary-bg">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-secondary-bg rounded-full mb-8">
           <Mail className="w-12 h-12 text-accent" />
         </div>
