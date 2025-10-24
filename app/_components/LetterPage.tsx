@@ -145,7 +145,7 @@ export default function LetterPage({
                 copyToClipboard();
               }
             }}
-            className="flex-1 py-3 px-4 bg-gradient-primary-btn text-primary hover:opacity-90 rounded-md text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+            className="flex-1 py-3 px-4 bg-gradient-secondary-btn text-primary hover:opacity-90 rounded-md text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
           >
             {copied ? (
               <>
