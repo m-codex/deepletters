@@ -99,7 +99,7 @@ export default function LetterPage({
         </div>
         <h2 className="text-4xl text-primary mb-4">Your Letter is Ready!</h2>
         <p className="text-gradient text-lg">
-          You can now share the link with the recipient.
+          You can now send or share the letter and save it.
         </p>
 
         <EmailForm shareLink={shareUrl} />
