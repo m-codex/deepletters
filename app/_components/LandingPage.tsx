@@ -26,7 +26,7 @@ export default function LandingPage() {
           <Mail className="w-12 h-12 text-accent" />
         </div>
           <h1 className="text-4xl md:text-6xl text-white mb-6 leading-tight text-balance">
-            Say it with deepletters.org-2
+            Say it with deepletters.org
           </h1> {/*old: Send meaningful letters */}
           
 
