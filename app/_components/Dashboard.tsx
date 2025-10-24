@@ -433,7 +433,6 @@ export default function Dashboard() {
         senderName: letter.sender_name || '',
         recipientName: letter.recipient_name || '',
         musicUrl: letter.music_url || null,
-        theme: letter.theme || 'light',
       });
       router.push('/create/write');
     };

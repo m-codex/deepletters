@@ -81,7 +81,6 @@ export default function PreviewStep() {
             content: letterData.content,
             sender_name: letterData.senderName,
             recipient_name: letterData.recipientName,
-            theme: letterData.theme,
             music_url: letterData.musicUrl,
             music_volume: letterData.musicVolume,
             status: 'finalized',
@@ -123,9 +122,7 @@ export default function PreviewStep() {
       onSecondaryClick={handleEdit}
     >
       <div
-        className={`px-4 py-3 sm:px-8 sm:py-5 md:px-12 md:py-8 pt-12 shadow-xl mb-8 relative rounded-lg ${
-          letterData.theme === 'light' ? 'bg-secondary-bg' : 'bg-primary'
-        }`}
+        className={`px-4 py-3 sm:px-8 sm:py-5 md:px-12 md:py-8 pt-12 shadow-xl mb-8 relative rounded-lg bg-primary`}
       >
         <div className="absolute top-4 right-4 bg-btn-secondary text-primary-bg px-4 py-1 rounded-full text-sm font-bold">
           PREVIEW MODE
@@ -168,9 +165,7 @@ export default function PreviewStep() {
           )}
         </div>
 
-        <div className={`prose prose-lg max-w-none ${
-          letterData.theme === 'light' ? 'text-primary' : 'text-primary-bg'
-        }`}>
+        <div className={`prose prose-lg max-w-none text-primary-bg`}>
           <p
             className="whitespace-pre-wrap leading-relaxed"
           >

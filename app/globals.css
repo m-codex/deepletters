@@ -19,20 +19,6 @@
     --color-btn-secondary-text: #262626;
   }
 
-  .theme-light {
-    --color-primary-bg: #F0EEED;
-    --color-secondary-bg: #FFFFFF;
-    --color-primary: #262626;
-    --color-secondary: #5A5A5A;
-    --color-border: #cfcfcf;
-    --color-white: #FFFFFF;
-    --color-accent: #deb778;
-    --color-btn-primary: #81756e; /* #af9888 */
-    --color-btn-hover: #998578;
-    --color-btn-secondary: #E3DFDC;
-    --color-btn-secondary-text: #262626;
-  }
-
   @font-face {
     font-family: "InterTight-Bold";
     src: url("/fonts/InterTight-Bold.ttf") format("truetype");
