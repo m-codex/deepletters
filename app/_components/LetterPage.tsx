@@ -6,6 +6,7 @@ import { Share2, Copy, Check, Loader2, Eye, Mail, Save, LayoutDashboard } from '
 import { Letter } from '@/_lib/supabase';
 import AuthModal from './AuthModal';
 import { useSupabase } from './SupabaseProvider';
+import EmailForm from './EmailForm';
 
 export default function LetterPage({
   managementToken,
@@ -100,6 +101,9 @@ export default function LetterPage({
         <p className="text-gradient text-lg">
           You can now share the link with the recipient.
         </p>
+
+        <EmailForm shareLink={shareUrl} />
+
         <div className="flex flex-col gap-3 my-8">
           <button
             onClick={async () => {
