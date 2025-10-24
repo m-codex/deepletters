@@ -141,7 +141,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
             {error || 'Letter not found'}
           </h2>
           <p className="text-secondary">
-            This letter may have been moved or the link is invalid.
+            This letter link is invalid.
           </p>
         </div>
       </div>
@@ -153,9 +153,9 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
       <div className="flex justify-center text-center p-10 bg-primary-bg text-primary">
         <div className="animate-fadeIn max-w-4xl w-full">
           <div className="w-24 h-24 bg-secondary-bg rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Mail className="w-12 h-12 text-btn-primary" />
+            <Mail className="w-12 h-12 text-accent" />
           </div>
-          <h1 className="text-4xl font-bold text-primary mb-6 font-serif">
+          <h1 className="text-4xl font-bold text-primary mb-6">
             A Letter from {letter.sender_name || 'A secret admirer'}
           </h1>
 
@@ -172,7 +172,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
               )}
               <button
                 onClick={() => setIsOpened(true)}
-                className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105"
+                className="bg-gradient-primary-btn hover:opacity-90 text-primary font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105"
               >
                 Open Letter
               </button>
@@ -195,7 +195,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                   {letter.music_url && (
                     <button
                       onClick={toggleAudio}
-                      className="float-right w-12 h-12 bg-btn-primary rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
+                      className="float-right w-12 h-12 bg-gradient-primary-btn hover:opacity:90 rounded-full flex items-center justify-center text-primary shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     >
                       {isPlaying ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                     </button>
@@ -209,7 +209,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
               </div>
             <div className="text-center mt-8">
               <p className="text-sm opacity-75 text-secondary">
-                Created with <span className="text-btn-primary">♥</span> on Deepletter.org
+                Created with ♥ on deepletters.org
               </p>
             </div>
 
@@ -222,7 +222,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
                 <button
                   onClick={() => router.push('/dashboard')}
                   disabled={isSaving}
-                  className="bg-btn-secondary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2 disabled:bg-tertiary-bg disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -234,7 +234,7 @@ export default function LetterViewer({ shareCode }: { shareCode: string }) {
               ) : (
                 <button
                   onClick={handleSaveLetter}
-                  className="bg-btn-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
+                  className="bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center gap-2"
                 >
                   <Save className="w-5 h-5" />
                   Sign Up or Log In
