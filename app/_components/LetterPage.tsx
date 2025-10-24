@@ -163,7 +163,7 @@ export default function LetterPage({
             href={shareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-3 px-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md font-semibold text-lg flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 py-3 px-4 bg-gradient-secondary-btn hover:opacity-90 text-primary rounded-md text-lg flex items-center justify-center gap-2 transition-colors"
           >
             <Eye className="w-5 h-5" />
             View Letter
