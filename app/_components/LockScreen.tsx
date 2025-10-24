@@ -53,7 +53,7 @@ export default function LockScreen({ sitePassword }: LockScreenProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-primary-bg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary-bg">
       <div className="bg-secondary-bg text-center p-8 rounded-lg shadow-xl">
          <div className="inline-flex items-center justify-center w-24 h-24 bg-tertiary-bg rounded-full mb-8">
           <Mail className="w-12 h-12 text-accent" />
