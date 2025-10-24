@@ -186,6 +186,7 @@ export default function WriteStep() {
       temp_id: null,
     });
     localStorage.removeItem('letterData');
+    localStorage.removeItem('recipientName');
     setSenderName('');
     setRecipientName('');
     setIsNameSet(false);
@@ -212,6 +213,7 @@ export default function WriteStep() {
       temp_id: null,
     });
     localStorage.removeItem('letterData');
+    localStorage.removeItem('recipientName');
     setRecipientName('');
     setIsRecipientNameSet(false);
     setIsDiscardConfirmOpen(false);
