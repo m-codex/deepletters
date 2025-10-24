@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface EmailFormProps {
   shareLink: string;
@@ -94,12 +94,12 @@ export default function EmailForm({ shareLink }: EmailFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-primary-btn hover:opacity-90 text-primary py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center justify-center gap-2 disabled:bg-tertiary-bg disabled:cursor-not-allowed"
+          className="w-full bg-gradient-primary-btn hover:opacity-90 text-primary font-bold py-3 px-8 rounded-lg text-lg hover:shadow-xl transition-all transform hover:scale-105 inline-flex items-center justify-center gap-2 disabled:bg-tertiary-bg disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            <Send className="w-5 h-5" /> 'Send Email'
+            'Send Email'
           )}
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
