@@ -15,10 +15,11 @@ export default function WriteStep() {
   const { letterData, updateLetterData } = useLetterData();
   const supabase = useSupabase();
   const [user, setUser] = useState<User | null>(null);
-  const [senderName, setSenderName] = useState(letterData.senderName);
-  const [recipientName, setRecipientName] = useState(letterData.recipientName);
-  const [isNameSet, setIsNameSet] = useState(!!letterData.senderName);
-  const [isRecipientNameSet, setIsRecipientNameSet] = useState(!!letterData.recipientName);
+  const [senderName, setSenderName] = useState(letterData?.senderName || '');
+  const [recipientName, setRecipientName] = useState(letterData?.recipientName || '');
+  const [content, setContent] = useState(letterData?.content || '');
+  const [isNameSet, setIsNameSet] = useState(!!letterData?.senderName);
+  const [isRecipientNameSet, setIsRecipientNameSet] = useState(!!letterData?.recipientName);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingRecipientName, setIsEditingRecipientName] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -34,7 +35,7 @@ export default function WriteStep() {
 
     // If there's data from the context (i.e., an active draft), use that.
     // The visibility of the form is also controlled by the context data.
-    if (letterData.senderName && letterData.recipientName) {
+    if (letterData?.senderName && letterData?.recipientName) {
       setSenderName(letterData.senderName);
       setRecipientName(letterData.recipientName);
       setIsNameSet(true);
@@ -72,6 +73,8 @@ export default function WriteStep() {
       localStorage.setItem('senderName', senderName);
       localStorage.setItem('recipientName', recipientName);
       updateLetterData({ senderName, recipientName });
+      setSenderName(senderName);
+      setRecipientName(recipientName);
       setIsNameSet(true);
       setIsRecipientNameSet(true);
       setIsEditingName(false);
@@ -97,59 +100,68 @@ export default function WriteStep() {
   const handleSave = async () => {
     setSaveStatus('saving');
     setIsSaving(true);
-    updateLetterData({ senderName, recipientName });
+    updateLetterData({ senderName, recipientName, content: content });
 
-    if (user) {
-      // Logged-in user: save draft to the database
-      const letterPayload = {
-        content: letterData.content,
-        sender_name: senderName,
-        recipient_name: recipientName,
-        theme: letterData.theme,
-        sender_id: user.id,
-        status: 'draft',
-      };
-
-      let result;
-      if (letterData.id) {
-        // Update existing draft
-        result = await supabase
-          .from('letters')
-          .update(letterPayload)
-          .eq('id', letterData.id)
-          .select()
-          .single();
-      } else {
-        // Create new draft
-        const letterPayloadWithShareCode = {
-          ...letterPayload,
-          share_code: shortUUID.generate(),
+    try {
+      if (user) {
+        // Logged-in user: save draft to the database
+        const letterPayload = {
+          content: content,
+          sender_name: senderName,
+          recipient_name: recipientName,
+          theme: letterData.theme,
+          sender_id: user.id,
+          status: 'draft',
         };
-        result = await supabase
-          .from('letters')
-          .insert(letterPayloadWithShareCode)
-          .select()
-          .single();
+
+        let result;
+        if (letterData.id) {
+          // Update existing draft
+          result = await supabase
+            .from('letters')
+            .update(letterPayload)
+            .eq('id', letterData.id)
+            .select()
+            .single();
+        } else {
+          // Create new draft
+          const letterPayloadWithShareCode = {
+            ...letterPayload,
+            share_code: shortUUID.generate(),
+          };
+          result = await supabase
+            .from('letters')
+            .insert(letterPayloadWithShareCode)
+            .select()
+            .single();
+        }
+
+        const { data, error } = result;
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          updateLetterData({ id: data.id, shareCode: data.share_code });
+        }
+      } else {
+        // Anonymous user: generate shareCode if it doesn't exist
+        if (!letterData.shareCode) {
+          updateLetterData({ shareCode: shortUUID.generate() });
+        }
       }
 
-      const { data, error } = result;
-
-      if (error) {
-        console.error('Error saving draft:', error);
-        setSaveStatus('error');
-        setIsSaving(false);
-        return false;
-      }
-
-      if (data) {
-        updateLetterData({ id: data.id });
-      }
+      setSaveStatus('saved');
+      return true;
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      setSaveStatus('error');
+      return false;
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveStatus('idle'), 2000);
     }
-
-    setSaveStatus('saved');
-    setTimeout(() => setSaveStatus('idle'), 2000);
-    setIsSaving(false);
-    return true;
   };
 
   const handleNext = async () => {
@@ -157,23 +169,35 @@ export default function WriteStep() {
     router.push('/create/music');
   };
 
+  const handleNew = async () => {
+    const saved = await handleSave();
+    if (!saved) return;
+
+    updateLetterData({
+      id: null,
+      shareCode: null,
+      content: '',
+      senderName: '',
+      recipientName: '',
+      theme: 'light',
+      musicUrl: null,
+      management_token: null,
+      temp_id: null,
+    });
+    localStorage.removeItem('letterData');
+    setSenderName('');
+    setRecipientName('');
+    setIsNameSet(false);
+    setIsRecipientNameSet(false);
+  };
+
   const handleDiscard = async () => {
+    const saved = await handleSave();
+    if (!saved) return;
     setIsDiscardConfirmOpen(true);
   };
 
   const confirmDiscard = async () => {
-    if (user && letterData.id) {
-      // Logged-in user: delete draft from the database
-      try {
-        const { error } = await supabase.from('letters').delete().eq('id', letterData.id);
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error discarding draft:', error);
-        alert('Could not discard the draft. Please try again.');
-        return;
-      }
-    }
-
     // Clear data from context and localStorage
     updateLetterData({
       id: null,
@@ -203,7 +227,7 @@ export default function WriteStep() {
       icon={<PenLine className="w-8 h-8 text-accent" />}
       buttonText={isSaving ? 'Saving...' : 'Next Step'}
       onNext={handleNext}
-      isNextDisabled={!letterData.content.trim() || isSaving}
+      isNextDisabled={!content.trim() || isSaving}
     >
       <Dialog
         isOpen={isDiscardConfirmOpen}
@@ -316,7 +340,7 @@ export default function WriteStep() {
                   <div className="flex gap-4">
                     {letterData.shareCode && (
                       <button
-                        onClick={handleDiscard}
+                        onClick={user ? handleNew : handleDiscard}
                         className="text-sm text-accent hover:underline"
                       >
                         New
@@ -339,8 +363,8 @@ export default function WriteStep() {
                 </div>
                 <textarea
                   id="letterContent"
-                  value={letterData.content}
-                  onChange={(e) => updateLetterData({ content: e.target.value })}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
                   placeholder="Dear friend,&#10;&#10;I wanted to tell you..."
                   rows={16}
                   className="w-full px-4 py-5 sm:px-8 sm:py-8 md:px-12 md:py-8 bg-primary-bg text-primary rounded-md focus:ring-2 focus:ring-border focus:border-transparent focus:outline-none transition-all resize-none text-lg"
