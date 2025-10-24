@@ -38,6 +38,7 @@ export default function WriteStep() {
     if (letterData?.senderName && letterData?.recipientName) {
       setSenderName(letterData.senderName);
       setRecipientName(letterData.recipientName);
+      setContent(letterData.content || '');
       setIsNameSet(true);
       setIsRecipientNameSet(true);
     } else {
