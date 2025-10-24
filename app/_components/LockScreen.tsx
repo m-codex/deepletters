@@ -52,21 +52,21 @@ export default function LockScreen({ sitePassword }: LockScreenProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700">
-        <h1 className="text-2xl font-bold text-white mb-4 text-center">Enter Password</h1>
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-primary-bg">
+      <div className="bg-secondary-bg p-8 rounded-lg shadow-xl">
+        <h1 className="text-2xl text-white mb-4 text-center">Enter Password</h1>
         <form onSubmit={handleSubmit}>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 mb-4 text-white bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 mb-4 text-primary bg-primary-bg rounded-md focus:outline-none focus:ring-2 focus:ring-border"
             placeholder="Password"
             autoFocus
           />
           <button
             type="submit"
-            className="w-full px-4 py-2 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+            className="w-full px-4 py-2 bg-gradient-primary-btn hover:opacity-90 text-primary rounded-md  transition-colors"
           >
             Unlock
           </button>
